@@ -1,0 +1,149 @@
+name: Mobile Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'pricex/PriceXMobile/**'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================
+  # ANDROID BUILD
+  # ============================================
+  build-android:
+    name: Build Android App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./pricex/PriceXMobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './pricex/PriceXMobile/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK (Debug)
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ./pricex/PriceXMobile/android/app/build/outputs/apk/debug/*.apk
+
+  # ============================================
+  # IOS BUILD
+  # ============================================
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ./pricex/PriceXMobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './pricex/PriceXMobile/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS
+        run: |
+          cd ios
+          xcodebuild -workspace PriceXMobile.xcworkspace \
+            -scheme PriceXMobile \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            clean build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload iOS Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: ./pricex/PriceXMobile/ios/build/
+
+  # ============================================
+  # DEPLOY TO STORES
+  # ============================================
+  deploy-play-store:
+    name: Deploy to Google Play
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Download APK
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: ./apk/
+
+      - name: Upload to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.pricex.app
+          releaseFiles: ./apk/*.apk
+          track: internal
+          status: completed
+
+  deploy-app-store:
+    name: Deploy to App Store
+    runs-on: macos-latest
+    needs: build-ios
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+      - name: Download iOS Build
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-build
+          path: ./ios-build/
+
+      - name: Upload to App Store
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: ./ios-build/*.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

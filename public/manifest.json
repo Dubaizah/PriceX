@@ -1,0 +1,114 @@
+{
+  "name": "PriceX - Global AI-Powered Pricing Authority",
+  "short_name": "PriceX",
+  "description": "Compare prices, track deals, and save money with AI-powered price predictions",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FFD700",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["shopping", "lifestyle", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Search Products",
+      "short_name": "Search",
+      "description": "Search for any product",
+      "url": "/search",
+      "icons": [{ "src": "/icons/search.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Hot Deals",
+      "short_name": "Deals",
+      "description": "Browse today's hottest deals",
+      "url": "/deals",
+      "icons": [{ "src": "/icons/deals.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Price Alerts",
+      "short_name": "Alerts",
+      "description": "View your price alerts",
+      "url": "/alerts",
+      "icons": [{ "src": "/icons/alerts.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PriceX Home Screen"
+    },
+    {
+      "src": "/screenshots/search.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "PriceX Search Results"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.pricex.app",
+      "id": "com.pricex.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/pricex/id123456789",
+      "id": "id123456789"
+    }
+  ],
+  "prefer_related_applications": false
+}

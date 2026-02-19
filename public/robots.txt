@@ -1,0 +1,41 @@
+# PriceX Robots.txt
+# https://pricex.com
+
+User-agent: *
+Allow: /
+Allow: /search
+Allow: /compare
+Allow: /deals
+Allow: /categories
+Allow: /product/
+Allow: /api/
+
+# Sitemaps
+Sitemap: https://pricex.com/sitemap.xml
+Sitemap: https://pricex.com/sitemap-pages.xml
+Sitemap: https://pricex.com/sitemap-products.xml
+Sitemap: https://pricex.com/sitemap-categories.xml
+
+# Crawl-delay (optional)
+Crawl-delay: 1
+
+# Disallow admin and private areas
+Disallow: /admin
+Disallow: /api/auth/
+Disallow: /api/admin/
+Disallow: /api/v1/user/
+Disallow: /_next/
+Disallow: /static/
+
+# User-agent specific
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /

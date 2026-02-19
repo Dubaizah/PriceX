@@ -1,0 +1,35 @@
+/**
+ * PriceX - Theme Provider
+ * Manages light/dark mode with persistence
+ */
+
+'use client';
+
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { type ReactNode } from 'react';
+
+interface ThemeProviderProps {
+  children: ReactNode;
+  defaultTheme?: string;
+  enableSystem?: boolean;
+  disableTransitionOnChange?: boolean;
+}
+
+export function ThemeProvider({ 
+  children, 
+  defaultTheme = 'system',
+  enableSystem = true,
+  disableTransitionOnChange = false,
+}: ThemeProviderProps) {
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme={defaultTheme}
+      enableSystem={enableSystem}
+      disableTransitionOnChange={disableTransitionOnChange}
+      storageKey="pricex-theme"
+    >
+      {children}
+    </NextThemesProvider>
+  );
+}

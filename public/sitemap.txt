@@ -1,0 +1,36 @@
+# PriceX Sitemap
+
+## Pages
+- https://pricex.com - Home
+- https://pricex.com/search - Search Products
+- https://pricex.com/compare - Compare Products
+- https://pricex.com/deals - Hot Deals
+- https://pricex.com/categories - Browse Categories
+- https://pricex.com/admin - Admin Dashboard
+
+## API Endpoints
+- https://pricex.com/api/v1/products/search
+- https://pricex.com/api/v1/products/[id]
+- https://pricex.com/api/v1/auth/login
+- https://pricex.com/api/v1/auth/register
+- https://pricex.com/api/v1/fx-rates
+- https://pricex.com/api/v1/b2b/pricing
+
+## Localization
+- https://pricex.com/en
+- https://pricex.com/ar
+- https://pricex.com/es
+- https://pricex.com/fr
+- https://pricex.com/zh
+- https://pricex.com/de
+- https://pricex.com/ja
+- https://pricex.com/ko
+- https://pricex.com/pt
+- https://pricex.com/ru
+- https://pricex.com/hi
+- https://pricex.com/ur
+
+## Sitemap Index
+- https://pricex.com/sitemap-products.xml
+- https://pricex.com/sitemap-categories.xml
+- https://pricex.com/sitemap-pages.xml

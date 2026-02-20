@@ -41,7 +41,8 @@ jobs:
       - name: Build Android APK (Debug)
         run: |
           cd PriceXMobile/android
-          ./gradlew assembleDebug
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -55,7 +56,6 @@ jobs:
   build-ios:
     name: Build iOS App
     runs-on: macos-latest
-    if: false  # Disable for now - complex RN 0.84 issues
 
     steps:
       - uses: actions/checkout@v4
@@ -78,10 +78,10 @@ jobs:
           cd PriceXMobile/ios
           xcodebuild -workspace PriceXMobile.xcworkspace \
             -scheme PriceXMobile \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            clean build \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO
 
@@ -90,49 +90,3 @@ jobs:
         with:
           name: ios-build
           path: PriceXMobile/ios/build/
-
-  # ============================================
-  # DEPLOY TO STORES
-  # ============================================
-  deploy-play-store:
-    name: Deploy to Google Play
-    runs-on: ubuntu-latest
-    needs: build-android
-    if: false # Disable for now - needs secrets
-
-    steps:
-      - name: Download APK
-        uses: actions/download-artifact@v4
-        with:
-          name: android-apk
-          path: ./apk/
-
-      - name: Upload to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
-          packageName: com.pricex.app
-          releaseFiles: ./apk/*.apk
-          track: internal
-          status: completed
-
-  deploy-app-store:
-    name: Deploy to App Store
-    runs-on: macos-latest
-    needs: build-ios
-    if: false # Disable for now - needs secrets
-
-    steps:
-      - name: Download iOS Build
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-build
-          path: ./ios-build/
-
-      - name: Upload to App Store
-        uses: apple-actions/upload-testflight-build@v1
-        with:
-          app-path: ./ios-build/*.ipa
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_API_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}

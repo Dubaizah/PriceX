@@ -105,3 +105,4 @@ PriceXMobile/ios/build/
 PriceXMobile/ios/Pods/
 PriceXMobile/android/gradle/
 !.gradle/wrapper/
+PriceX.apk

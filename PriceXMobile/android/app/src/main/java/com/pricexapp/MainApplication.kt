@@ -1,4 +1,4 @@
-package com.pricexmobile
+package com.pricexapp
 
 import android.app.Application
 import com.facebook.react.PackageList

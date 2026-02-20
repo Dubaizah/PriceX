@@ -106,3 +106,4 @@ PriceXMobile/ios/Pods/
 PriceXMobile/android/gradle/
 !.gradle/wrapper/
 PriceX.apk
+PriceX-release.apk

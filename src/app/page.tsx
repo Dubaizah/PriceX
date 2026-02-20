@@ -20,6 +20,7 @@ import {
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PriceXLogo } from '@/components/ui/PriceXLogo';
+import { PricingSection } from '@/components/monetization/PricingSection';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function HomePage() {
@@ -319,6 +320,9 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Pricing Section */}
+        <PricingSection />
       </main>
 
       <Footer />

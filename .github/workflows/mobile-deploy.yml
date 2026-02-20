@@ -2,9 +2,9 @@ name: Mobile Build & Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [master, main]
     paths:
-      - 'pricex/PriceXMobile/**'
+      - 'PriceXMobile/**'
   workflow_dispatch:
 
 env:

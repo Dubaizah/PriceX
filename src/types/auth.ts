@@ -290,9 +290,12 @@ export interface LoginResponse {
   success: boolean;
   requires2FA: boolean;
   tempToken?: string;
-  message: string;
+  message?: string;
+  error?: string;
   remainingAttempts?: number;
   lockedUntil?: Date;
+  user?: User;
+  session?: UserSession;
 }
 
 // Auth State

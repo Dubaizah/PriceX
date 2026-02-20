@@ -115,7 +115,7 @@ export const AD_NETWORKS: AdNetworkConfig[] = [
     rpmTarget: 6.00,
     paymentTerms: {
       minPayout: 100,
-      frequency: 'net45',
+      frequency: 'net30',
       method: ['wire', 'paypal'],
     },
     supportedFormats: ['native_feed'],

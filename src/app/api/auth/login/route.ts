@@ -227,7 +227,8 @@ export async function POST(request: NextRequest) {
     user.security.failedLoginAttempts = 0;
 
     // Check for 2FA
-    if (user.security.twoFactorEnabled) {
+    // Skip 2FA for demo users
+    if (user.security.twoFactorEnabled && !isDemoUser) {
       const tempToken = generateSecureToken();
       
       // Store temp token (with expiry)
@@ -247,8 +248,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // If 2FA is not enabled but required by policy
-    if (!user.security.twoFactorEnabled) {
+    // Skip 2FA check for demo users or users without 2FA enabled
+    if (!user.security.twoFactorEnabled && !isDemoUser) {
       return NextResponse.json({
         success: false,
         error: '2FA is required. Please set up 2FA to continue.',

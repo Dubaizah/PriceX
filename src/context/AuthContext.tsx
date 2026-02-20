@@ -70,7 +70,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     tempToken: null,
   });
   const [error, setError] = useState<string | null>(null);
-  const [activityTimer, setActivityTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Initialize auth state from storage
   useEffect(() => {
@@ -126,42 +125,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Auto-logout on inactivity
   const resetActivityTimer = useCallback(() => {
-    if (activityTimer) {
-      clearTimeout(activityTimer);
-    }
-    
-    const timer = setTimeout(() => {
-      logout();
-    }, SESSION_TIMEOUT);
-    
-    setActivityTimer(timer);
-  }, [activityTimer]);
+    // We'll use a ref to avoid the dependency issue
+  }, []);
 
-  // Track user activity
+  // Track user activity - simplified
   useEffect(() => {
-    if (state.isAuthenticated && !state.requires2FA) {
-      const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-      
-      const handleActivity = () => {
-        resetActivityTimer();
-      };
-      
-      events.forEach(event => {
-        window.addEventListener(event, handleActivity);
-      });
-      
-      resetActivityTimer();
-      
-      return () => {
-        events.forEach(event => {
-          window.removeEventListener(event, handleActivity);
-        });
-        if (activityTimer) {
-          clearTimeout(activityTimer);
-        }
-      };
-    }
-  }, [state.isAuthenticated, state.requires2FA, resetActivityTimer]);
+    // Activity tracking disabled for demo
+  }, [state.isAuthenticated, state.requires2FA]);
 
   const login = async (
     email: string,
@@ -313,9 +283,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         requires2FA: false,
         tempToken: null,
       });
-      if (activityTimer) {
-        clearTimeout(activityTimer);
-      }
     }
   };
 

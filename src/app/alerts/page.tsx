@@ -102,9 +102,9 @@ export default function AlertsPage() {
                       <Package className="w-8 h-8 text-muted-foreground" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold mb-1">{alert.productName}</h3>
+                      <h3 className="font-semibold mb-1">{alert.product?.name || 'Product'}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Target: {formatCurrency(alert.targetPrice, 'USD')}
+                        Target: {formatCurrency(alert.targetPrice || 0, 'USD')}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className={`text-xs px-2 py-1 rounded-full ${

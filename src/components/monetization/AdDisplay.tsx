@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { adManager, AdPlacement, AD_PLACEMENTS } from "@/lib/monetization/config";
-import { useRegion } from "@/context/RegionContext";
+import { adManager, AD_PLACEMENTS } from "@/lib/monetization/config";
 
 interface AdDisplayProps {
   placementId: string;
@@ -11,7 +10,6 @@ interface AdDisplayProps {
 
 export function AdDisplay({ placementId, className = "" }: AdDisplayProps) {
   const adRef = useRef<HTMLDivElement>(null);
-  const { currentRegion } = useRegion();
 
   useEffect(() => {
     if (!adRef.current) return;
@@ -20,7 +18,7 @@ export function AdDisplay({ placementId, className = "" }: AdDisplayProps) {
     if (!placement) return;
 
     adManager.lazyLoadAd(placementId, adRef.current);
-  }, [placementId, currentRegion.code]);
+  }, [placementId]);
 
   const placement = AD_PLACEMENTS.find((p) => p.id === placementId);
   if (!placement) return null;

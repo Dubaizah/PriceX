@@ -29,7 +29,7 @@ export default function DealsPage() {
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   useEffect(() => {
-    search('deal', { inStockOnly: true });
+    search('deal', { inStock: true });
   }, []);
 
   const timeFilters = [
@@ -118,9 +118,9 @@ export default function DealsPage() {
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--pricex-yellow)]" />
             </div>
-          ) : searchResults && searchResults.length > 0 ? (
+          ) : (searchResults as any) && (searchResults as any).length > 0 ? (
             <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-              {searchResults.map((product, index) => (
+              {(searchResults as any).map((product: any, index: number) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}

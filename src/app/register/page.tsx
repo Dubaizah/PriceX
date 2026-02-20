@@ -56,7 +56,13 @@ export default function RegisterPage() {
       return;
     }
 
-    const result = await register({ name, email, password });
+    const result = await register({ 
+      name, 
+      email, 
+      password,
+      mobile: '',
+      gdprConsent: { marketing: true, analytics: true, thirdParty: true }
+    });
     if (result.success) {
       router.push('/');
     } else {

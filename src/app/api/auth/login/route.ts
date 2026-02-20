@@ -28,6 +28,52 @@ const mockUsers = new Map();
 const mockSessions = new Map();
 const mockAuditLogs = [];
 
+// Demo users for testing
+const DEMO_USERS = [
+  { email: 'admin@pricex.com', password: 'admin123', role: 'admin', name: 'Admin User' },
+  { email: 'user@pricex.com', password: 'user123', role: 'user', name: 'Test User' },
+  { email: 'demo@pricex.com', password: 'demo123', role: 'user', name: 'Demo User' },
+];
+
+// Initialize demo users
+if (mockUsers.size === 0) {
+  DEMO_USERS.forEach((user, index) => {
+    const userId = `user_${index + 1}`;
+    mockUsers.set(userId, {
+      id: userId,
+      email: user.email,
+      mobile: '+971500000000',
+      password: user.password, // Plain text for demo (should be hashed in production)
+      role: user.role,
+      name: user.name,
+      status: 'active',
+      profile: {
+        avatar: null,
+        bio: 'Demo user for testing',
+        location: 'Dubai, UAE',
+        timezone: 'Asia/Dubai',
+        language: 'en',
+        currency: 'USD',
+      },
+      subscription: {
+        plan: user.role === 'admin' ? 'enterprise' : 'free',
+        startedAt: new Date(),
+        expiresAt: null,
+      },
+      security: {
+        twoFactorEnabled: false,
+        backupCodes: [],
+        lastPasswordChange: new Date(),
+        passwordHistory: [],
+        loginAttempts: 0,
+        lockedUntil: null,
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  });
+}
+
 /**
  * POST /api/auth/login
  * Authenticate user with email/mobile + password + 2FA
@@ -116,8 +162,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify password
-    const passwordValid = await verifyPassword(password, user.passwordHash);
+    // Verify password - allow plain text for demo users
+    const isDemoUser = DEMO_USERS.some(u => u.email === email);
+    const passwordValid = isDemoUser 
+      ? password === user.password 
+      : await verifyPassword(password, user.passwordHash);
 
     if (!passwordValid) {
       // Increment failed attempts

@@ -9,13 +9,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, Phone, ArrowRight, AlertTriangle, Shield, Timer, Send } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Phone, ArrowRight, AlertTriangle, Shield, Timer, Send, Check } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 
-type LoginStep = 'credentials' | '2fa' | 'locked';
+type LoginStep = 'credentials' | '2fa' | 'success';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,7 +28,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [remainingAttempts, setRemainingAttempts] = useState(3);
   const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState(0);
   const [twoFactorCode, setTwoFactorCode] = useState('');
@@ -36,6 +35,7 @@ export default function LoginPage() {
   const [codeSent, setCodeSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [userEmail, setUserEmail] = useState('');
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     if (lockedUntil) {
@@ -84,10 +84,7 @@ export default function LoginPage() {
         setCodeSent(true);
         setResendTimer(60);
         setUserEmail(targetEmail);
-        // In demo mode, show the code in console
         if (data.demoCode) {
-          console.log('Demo OTP:', data.demoCode);
-          // For demo, auto-fill the code
           setTwoFactorCode(data.demoCode);
         }
       } else {
@@ -111,7 +108,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Check for locked account in localStorage
     const users = JSON.parse(localStorage.getItem('pricex-users') || '[]');
     const user = users.find((u: any) => 
       loginMethod === 'email' ? u.email === identifier.toLowerCase() : u.mobile === identifier
@@ -121,7 +117,6 @@ export default function LoginPage() {
       const lockTime = new Date(user.lockedUntil);
       if (lockTime > new Date()) {
         setLockedUntil(lockTime);
-        setStep('locked');
         return;
       }
     }
@@ -129,30 +124,21 @@ export default function LoginPage() {
     const result = await login(identifier, password);
     
     if (!result.success) {
-      if (result.remainingAttempts !== undefined) {
-        setRemainingAttempts(result.remainingAttempts);
-      }
       if (result.lockedUntil) {
         setLockedUntil(new Date(result.lockedUntil));
-        setStep('locked');
-        
         if (user) {
           user.lockedUntil = result.lockedUntil.toISOString();
-          user.failedLoginAttempts = 3;
           localStorage.setItem('pricex-users', JSON.stringify(users));
         }
       }
       setError(result.message || 'Login failed');
     } else {
-      // Store email for OTP
       if (loginMethod === 'email') {
         setUserEmail(email);
       } else if (user?.email) {
         setUserEmail(user.email);
       }
-      // Credentials valid, proceed to 2FA
       setStep('2fa');
-      // Send OTP automatically
       setTimeout(() => {
         const targetEmail = loginMethod === 'email' ? email : (user?.email || '');
         if (targetEmail) {
@@ -171,7 +157,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Complete login
     const identifier = loginMethod === 'email' ? email : mobile;
     const users = JSON.parse(localStorage.getItem('pricex-users') || '[]');
     const user = users.find((u: any) => 
@@ -179,7 +164,6 @@ export default function LoginPage() {
     );
     
     if (user) {
-      // Store session
       const session = {
         id: `session_${Date.now()}`,
         userId: user.id,
@@ -193,7 +177,12 @@ export default function LoginPage() {
         expiresAt: session.expiresAt,
       }));
       
-      router.push('/profile');
+      setVerified(true);
+      setStep('success');
+      
+      setTimeout(() => {
+        router.push('/profile');
+      }, 1500);
     } else {
       setError('Session error. Please login again.');
       setStep('credentials');
@@ -224,13 +213,21 @@ export default function LoginPage() {
                   <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
                   <div>
                     <p className="text-red-500 text-sm">{error}</p>
-                    {remainingAttempts < 3 && step !== 'locked' && (
-                      <p className="text-red-400 text-xs mt-1">
-                        {remainingAttempts} attempt{remainingAttempts !== 1 ? 's' : ''} remaining
-                      </p>
-                    )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Step: Success */}
+            {step === 'success' && (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <Check className="w-10 h-10 text-green-500" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Login Successful!</h2>
+                <p className="text-muted-foreground">
+                  Redirecting to your profile...
+                </p>
               </div>
             )}
 
@@ -329,9 +326,8 @@ export default function LoginPage() {
                 </button>
 
                 <div className="text-center text-sm text-muted-foreground">
-                  <p>Demo accounts:</p>
-                  <p className="font-mono text-xs">admin@pricex.com / admin123</p>
-                  <p className="font-mono text-xs">user@pricex.com / user123</p>
+                  <p>Or use your registered account:</p>
+                  <p className="font-mono text-xs mt-1">Email + Password</p>
                 </div>
               </form>
             )}
@@ -345,7 +341,7 @@ export default function LoginPage() {
                   </div>
                   <h2 className="text-xl font-semibold mb-2">Two-Factor Authentication</h2>
                   <p className="text-muted-foreground text-sm">
-                    Enter the 6-digit code sent to your email
+                    Enter the 6-digit code from your email
                   </p>
                 </div>
 
@@ -391,10 +387,6 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <p className="text-center text-sm text-muted-foreground">
-                  Demo: Code is shown in browser console
-                </p>
-
                 <button
                   onClick={handle2FASubmit}
                   disabled={twoFactorCode.length !== 6}
@@ -410,28 +402,6 @@ export default function LoginPage() {
                 >
                   Back to login
                 </button>
-              </div>
-            )}
-
-            {/* Step: Locked */}
-            {step === 'locked' && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
-                  <AlertTriangle className="w-8 h-8 text-red-500" />
-                </div>
-                <h2 className="text-xl font-semibold mb-2">Account Locked</h2>
-                <p className="text-muted-foreground mb-4">
-                  Too many failed login attempts.
-                </p>
-                <div className="p-4 rounded-xl bg-secondary mb-6">
-                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                    <Timer className="w-5 h-5" />
-                    <span>Try again in {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
-                  </div>
-                </div>
-                <Link href="/forgot-password" className="text-[var(--pricex-yellow)] hover:underline">
-                  Reset Password to Unlock
-                </Link>
               </div>
             )}
 

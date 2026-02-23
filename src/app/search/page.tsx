@@ -4,25 +4,22 @@ import { useState, useEffect } from 'react';
 import { Search, Star } from 'lucide-react';
 import Link from 'next/link';
 
-const SAMPLE_PRODUCTS = [
-  { id: '1', name: 'iPhone 15 Pro Max', brand: 'Apple', price: 1199, image: '/product-1.jpg', rating: 4.8, reviews: 2543 },
-  { id: '2', name: 'Samsung Galaxy S24 Ultra', brand: 'Samsung', price: 1299, image: '/product-2.jpg', rating: 4.7, reviews: 1823 },
-  { id: '3', name: 'MacBook Pro 16" M3 Max', brand: 'Apple', price: 3499, image: '/product-3.jpg', rating: 4.9, reviews: 956 },
-  { id: '4', name: 'Sony WH-1000XM5', brand: 'Sony', price: 399, image: '/product-4.jpg', rating: 4.8, reviews: 15420 },
-  { id: '5', name: 'Nike Air Max 270', brand: 'Nike', price: 150, image: '/product-5.jpg', rating: 4.6, reviews: 8932 },
-  { id: '6', name: 'Samsung 65" OLED TV', brand: 'Samsung', price: 2499, image: '/product-6.jpg', rating: 4.7, reviews: 1245 },
-  { id: '7', name: 'Dyson V15 Detect', brand: 'Dyson', price: 749, image: '/product-7.jpg', rating: 4.8, reviews: 7821 },
-  { id: '8', name: 'Adidas Ultraboost 22', brand: 'Adidas', price: 190, image: '/product-8.jpg', rating: 4.5, reviews: 12453 },
-  { id: '9', name: 'Apple Watch Series 9', brand: 'Apple', price: 399, image: '/product-9.jpg', rating: 4.8, reviews: 9876 },
-  { id: '10', name: 'PlayStation 5', brand: 'Sony', price: 499, image: '/product-10.jpg', rating: 4.9, reviews: 24531 },
-  { id: '11', name: 'LG C3 55" OLED', brand: 'LG', price: 1799, image: '/product-1.svg', rating: 4.7, reviews: 3456 },
-  { id: '12', name: 'Canon EOS R6 II', brand: 'Canon', price: 2499, image: '/product-2.svg', rating: 4.9, reviews: 892 },
-];
+interface SearchProduct {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  prices?: Array<{ retailer: string; price: number; currency: string }>;
+}
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState(SAMPLE_PRODUCTS);
+  const [results, setResults] = useState<SearchProduct[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,24 +30,53 @@ export default function SearchPage() {
     }
   }, []);
 
-  const handleSearchSubmit = (searchQuery?: string) => {
+  const handleSearchSubmit = async (searchQuery?: string) => {
     const q = searchQuery || query;
     if (!q.trim()) {
-      setResults(SAMPLE_PRODUCTS);
+      setResults([]);
       setHasSearched(false);
       return;
     }
-    const term = q.toLowerCase();
-    const filtered = SAMPLE_PRODUCTS.filter(p => 
-      p.name.toLowerCase().includes(term) || 
-      p.brand.toLowerCase().includes(term)
-    );
-    setResults(filtered);
+
+    setLoading(true);
     setHasSearched(true);
+
+    try {
+      const response = await fetch(`/api/products/search?q=${encodeURIComponent(q)}&limit=50`);
+      const data = await response.json();
+      
+      if (data.success && data.products) {
+        const products: SearchProduct[] = data.products.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          price: p.pricePoints?.[0]?.price || p.priceRange?.min || 0,
+          image: p.images?.[0]?.url || '/product-1.jpg',
+          rating: p.rating || 0,
+          reviews: p.reviewCount || 0,
+          prices: p.pricePoints?.map((pp: any) => ({
+            retailer: pp.retailer?.name || 'Unknown',
+            price: pp.price,
+            currency: pp.currency || 'USD',
+          })) || [],
+        }));
+        setResults(products);
+      } else {
+        setResults([]);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setResults([]);
+    }
+
+    setLoading(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (query) {
+      window.history.pushState({}, '', `/search?q=${encodeURIComponent(query)}`);
+    }
     handleSearchSubmit();
   };
 
@@ -91,8 +117,12 @@ export default function SearchPage() {
 
           {!hasSearched ? (
             <div className="text-center py-10">
-              <p className="text-gray-500">Showing all products. Use the search above to filter.</p>
-              <p className="text-sm text-gray-400 mt-2">Try: iPhone, Samsung, Nike, Sony</p>
+              <p className="text-gray-500">Enter a product name to search across all global retailers.</p>
+              <p className="text-sm text-gray-400 mt-2">Try: iPhone, Samsung, Nike, MacBook, Dyson</p>
+            </div>
+          ) : loading ? (
+            <div className="text-center py-20">
+              <p className="text-gray-500 text-lg">Searching...</p>
             </div>
           ) : results.length === 0 ? (
             <div className="text-center py-20">

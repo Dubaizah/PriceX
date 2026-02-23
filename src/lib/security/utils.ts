@@ -13,9 +13,9 @@ export const PASSWORD_POLICY = {
   MIN_UPPERCASE: 1,
   MIN_LOWERCASE: 1,
   MIN_NUMBERS: 1,
-  MIN_SYMBOLS: 1,
+  MIN_SYMBOLS: 0, // No special character required
   HISTORY_COUNT: 5, // Cannot reuse last 5 passwords
-  EXPIRY_DAYS: 90, // 3 months
+  EXPIRY_DAYS: 365, // 12 months (annually)
 };
 
 // Account Lockout Constants

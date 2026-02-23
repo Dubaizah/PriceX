@@ -11,278 +11,114 @@ import {
   generateSecureToken,
   generateOTP,
   calculateLockoutExpiry,
-  isPasswordReused,
-  generateDeviceFingerprint,
   calculatePasswordExpiry,
 } from '@/lib/security/utils';
 import { LOCKOUT_POLICY, SESSION_POLICY } from '@/lib/security/utils';
 import { performFraudCheck, parseUserAgent, getLocationFromIP } from '@/lib/security/monitoring';
 import { SlidingWindowRateLimiter } from '@/lib/security/monitoring';
+import { findUserByEmail, findUserByMobile, findUserById, updateUser } from '@/lib/database/mock-db';
 
-// Rate limiters
-const loginRateLimiter = new SlidingWindowRateLimiter(60000, 5); // 5 attempts per minute
-const registerRateLimiter = new SlidingWindowRateLimiter(3600000, 3); // 3 attempts per hour
+const loginRateLimiter = new SlidingWindowRateLimiter(60000, 10);
 
-// Mock database (replace with real database in production)
-const mockUsers = new Map();
 const mockSessions = new Map();
 const mockAuditLogs = [];
 
-// Demo users for testing
-const DEMO_USERS = [
-  { email: 'admin@pricex.com', password: 'admin123', role: 'admin', name: 'Admin User' },
-  { email: 'user@pricex.com', password: 'user123', role: 'user', name: 'Test User' },
-  { email: 'demo@pricex.com', password: 'demo123', role: 'user', name: 'Demo User' },
-];
-
-// Initialize demo users
-if (mockUsers.size === 0) {
-  DEMO_USERS.forEach((user, index) => {
-    const userId = `user_${index + 1}`;
-    mockUsers.set(userId, {
-      id: userId,
-      email: user.email,
-      mobile: '+971500000000',
-      password: user.password, // Plain text for demo (should be hashed in production)
-      role: user.role,
-      name: user.name,
-      status: 'active',
-      profile: {
-        avatar: null,
-        bio: 'Demo user for testing',
-        location: 'Dubai, UAE',
-        timezone: 'Asia/Dubai',
-        language: 'en',
-        currency: 'USD',
-      },
-      subscription: {
-        plan: user.role === 'admin' ? 'enterprise' : 'free',
-        startedAt: new Date(),
-        expiresAt: null,
-      },
-      security: {
-        twoFactorEnabled: false,
-        backupCodes: [],
-        lastPasswordChange: new Date(),
-        passwordHistory: [],
-        loginAttempts: 0,
-        lockedUntil: null,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  });
-}
-
 /**
  * POST /api/auth/login
- * Authenticate user with email/mobile + password + 2FA
+ * Authenticate user with email/mobile + password
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password, rememberMe = false } = body;
 
-    // Get client info
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const deviceId = generateDeviceFingerprint(userAgent, ipAddress);
 
-    // Rate limiting
     const rateLimitKey = `${ipAddress}:${email}`;
     const rateLimit = loginRateLimiter.isAllowed(rateLimitKey);
     
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Too many login attempts. Please try again later.',
-          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000),
-        },
+        { success: false, error: 'Too many login attempts. Please try again later.' },
         { status: 429 }
       );
     }
 
-    // Find user (mock - replace with DB query)
-    const user = Array.from(mockUsers.values()).find((u: any) => 
-      u.email === email || u.mobile === email
-    );
+    const user = findUserByEmail(email) || findUserByMobile(email);
 
     if (!user) {
-      // Log failed attempt
-      logAuditEvent({
-        action: 'LOGIN_FAILED',
-        email,
-        ipAddress,
-        userAgent,
-        deviceId,
-        success: false,
-        errorMessage: 'User not found',
-      });
-
       return NextResponse.json(
         { success: false, error: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // Check if account is locked
     if (user.status === 'locked') {
-      if (user.security.lockedUntil && new Date() < new Date(user.security.lockedUntil)) {
+      if (user.security.lockedUntil && new Date(user.security.lockedUntil) > new Date()) {
         const remainingTime = Math.ceil(
           (new Date(user.security.lockedUntil).getTime() - Date.now()) / 60000
         );
-        
         return NextResponse.json(
-          { 
-            success: false, 
-            error: `Account locked. Try again in ${remainingTime} minutes.`,
-            lockedUntil: user.security.lockedUntil,
-          },
+          { success: false, error: `Account locked. Try again in ${remainingTime} minutes.` },
           { status: 403 }
         );
-      } else {
-        // Unlock account if lockout period has passed
-        user.status = 'active';
-        user.security.failedLoginAttempts = 0;
-        user.security.lockedUntil = null;
       }
+      updateUser(user.id, { 
+        status: 'active',
+        security: { ...user.security, failedLoginAttempts: 0, lockedUntil: null }
+      });
     }
 
-    // Check if password has expired
-    if (user.security.passwordExpiresAt && 
-        new Date() > new Date(user.security.passwordExpiresAt)) {
+    if (user.security.passwordExpiresAt && new Date(user.security.passwordExpiresAt) < new Date()) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Password has expired. Please reset your password.',
-          requiresPasswordReset: true,
-        },
+        { success: false, error: 'Password has expired. Please reset your password.' },
         { status: 403 }
       );
     }
 
-    // Verify password - allow plain text for demo users
-    const isDemoUser = DEMO_USERS.some(u => u.email === email);
-    const passwordValid = isDemoUser 
-      ? password === user.password 
-      : await verifyPassword(password, user.passwordHash);
+    const passwordValid = await verifyPassword(password, user.passwordHash);
 
     if (!passwordValid) {
-      // Increment failed attempts
-      user.security.failedLoginAttempts = (user.security.failedLoginAttempts || 0) + 1;
+      const failedAttempts = (user.security.failedLoginAttempts || 0) + 1;
+      const updatedSecurity = { ...user.security, failedLoginAttempts: failedAttempts };
       
-      const remainingAttempts = LOCKOUT_POLICY.MAX_ATTEMPTS - user.security.failedLoginAttempts;
-      
-      // Check if account should be locked
-      if (user.security.failedLoginAttempts >= LOCKOUT_POLICY.MAX_ATTEMPTS) {
-        user.status = 'locked';
-        user.security.lockedUntil = calculateLockoutExpiry();
-        
-        logAuditEvent({
-          action: 'ACCOUNT_LOCK',
-          userId: user.id,
-          email: user.email,
-          ipAddress,
-          userAgent,
-          deviceId,
-          success: false,
-          details: { reason: 'Too many failed login attempts' },
-        });
-
+      if (failedAttempts >= LOCKOUT_POLICY.MAX_ATTEMPTS) {
+        updatedSecurity.lockedUntil = calculateLockoutExpiry();
+        updateUser(user.id, { status: 'locked', security: updatedSecurity });
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Account locked due to too many failed attempts.',
-            lockedUntil: user.security.lockedUntil,
-          },
+          { success: false, error: 'Account locked due to too many failed attempts.' },
           { status: 403 }
         );
       }
-
-      // Warn user on remaining attempts
-      logAuditEvent({
-        action: 'LOGIN_FAILED',
-        userId: user.id,
-        email: user.email,
-        ipAddress,
-        userAgent,
-        deviceId,
-        success: false,
-        errorMessage: 'Invalid password',
-      });
-
+      
+      updateUser(user.id, { security: updatedSecurity });
+      
       return NextResponse.json(
         { 
           success: false, 
           error: 'Invalid credentials',
-          remainingAttempts,
-          warning: remainingAttempts <= 1 ? 'Account will be locked after next failed attempt.' : undefined,
+          remainingAttempts: LOCKOUT_POLICY.MAX_ATTEMPTS - failedAttempts,
         },
         { status: 401 }
       );
     }
 
-    // Password correct - reset failed attempts
-    user.security.failedLoginAttempts = 0;
-
-    // Check for 2FA
-    // Skip 2FA for demo users
-    if (user.security.twoFactorEnabled && !isDemoUser) {
-      const tempToken = generateSecureToken();
-      
-      // Store temp token (with expiry)
-      user.temp2FAToken = {
-        token: tempToken,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
-      };
-
-      // Send 2FA code
-      await send2FACode(user, user.security.twoFactorMethod);
-
-      return NextResponse.json({
-        success: true,
-        requires2FA: true,
-        tempToken,
-        message: 'Please enter your 2FA code',
-      });
-    }
-
-    // Skip 2FA check for demo users or users without 2FA enabled
-    if (!user.security.twoFactorEnabled && !isDemoUser) {
-      return NextResponse.json({
-        success: false,
-        error: '2FA is required. Please set up 2FA to continue.',
-        requires2FASetup: true,
-      }, { status: 403 });
-    }
-
-    // Complete login
     const session = await createSession(user, deviceId, userAgent, ipAddress, rememberMe);
     
-    // Update user login info
-    user.security.lastLoginAt = new Date();
-    user.security.lastLoginIp = ipAddress;
-    user.security.lastLoginDevice = deviceId;
+    const updatedSecurity = {
+      ...user.security,
+      lastLoginAt: new Date(),
+      lastLoginIp: ipAddress,
+      lastLoginDevice: deviceId,
+      failedLoginAttempts: 0,
+    };
     
-    const location = await getLocationFromIP(ipAddress);
-    user.security.lastLoginLocation = `${location.city}, ${location.country}`;
-
-    // Log successful login
-    logAuditEvent({
-      action: 'LOGIN',
-      userId: user.id,
-      email: user.email,
-      ipAddress,
-      userAgent,
-      deviceId,
-      success: true,
-      details: { sessionId: session.id },
-    });
+    updateUser(user.id, { security: updatedSecurity });
 
     return NextResponse.json({
       success: true,
-      requires2FA: false,
       user: sanitizeUser(user),
       session,
     });
@@ -296,9 +132,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * Create user session
- */
 async function createSession(
   user: any,
   deviceId: string,
@@ -317,7 +150,7 @@ async function createSession(
     deviceId,
     deviceName: generateDeviceName(userAgent),
     deviceType: parsedUA.device,
-    browser: `${parsedUA.browser}`,
+    browser: parsedUA.browser,
     os: parsedUA.os,
     ipAddress,
     location: `${location.city}, ${location.country}`,
@@ -333,64 +166,16 @@ async function createSession(
   return session;
 }
 
-/**
- * Generate device name
- */
 function generateDeviceName(userAgent: string): string {
   const parsed = parseUserAgent(userAgent);
   return `${parsed.browser} on ${parsed.os}`;
 }
 
-/**
- * Send 2FA code
- */
-async function send2FACode(user: any, method: string) {
-  const code = generateOTP();
-  
-  // Store code
-  user.pending2FACode = {
-    code: await hashPassword(code), // Hash for storage
-    expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
-  };
-
-  // Send via appropriate method
-  switch (method) {
-    case 'sms':
-      // Send SMS
-      console.log(`SMS 2FA code for ${user.mobile}: ${code}`);
-      break;
-    case 'email':
-      // Send email
-      console.log(`Email 2FA code for ${user.email}: ${code}`);
-      break;
-    case 'app':
-      // TOTP - code is generated by authenticator app
-      break;
-  }
-}
-
-/**
- * Sanitize user object for response
- */
 function sanitizeUser(user: any) {
-  const { passwordHash, security, temp2FAToken, pending2FACode, ...safeUser } = user;
-  return {
-    ...safeUser,
-    security: {
-      twoFactorEnabled: security.twoFactorEnabled,
-      lastLoginAt: security.lastLoginAt,
-      lastLoginLocation: security.lastLoginLocation,
-    },
-  };
+  const { passwordHash, ...safeUser } = user;
+  return safeUser;
 }
 
-/**
- * Log audit event
- */
-function logAuditEvent(event: any) {
-  mockAuditLogs.push({
-    ...event,
-    timestamp: new Date(),
-  });
-  console.log('[AUDIT]', event);
+function generateDeviceFingerprint(userAgent: string, ipAddress: string): string {
+  return `device_${Buffer.from(userAgent + ipAddress).toString('base64').slice(0, 32)}`;
 }

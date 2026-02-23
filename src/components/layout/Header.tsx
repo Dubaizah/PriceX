@@ -16,10 +16,12 @@ import { RegionSelector } from '@/components/region/RegionSelector';
 import { LanguageSwitcher } from '@/components/language/LanguageSwitcher';
 import { CurrencySelector } from '@/components/currency/CurrencySelector';
 import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
 
 export function Header() {
   const { t, isRTL } = useLanguage();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,7 +120,7 @@ export function Header() {
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--pricex-yellow)] rounded-full" />
               </Link>
-              <Link href="/login" className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <Link href={isAuthenticated ? "/profile" : "/login"} className="p-2 rounded-lg hover:bg-secondary transition-colors">
                 <User className="w-5 h-5" />
               </Link>
             </div>

@@ -1,6 +1,6 @@
 /**
  * PriceX - Registration API Route
- * User registration with strict validation and GDPR compliance
+ * User registration with localStorage persistence for Vercel compatibility
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,12 +13,11 @@ import {
 import { generateDeviceFingerprint } from '@/lib/security/utils';
 import { SlidingWindowRateLimiter } from '@/lib/security/monitoring';
 
-const registerRateLimiter = new SlidingWindowRateLimiter(3600000, 3); // 3 per hour
-const mockUsers = new Map();
+const registerRateLimiter = new SlidingWindowRateLimiter(3600000, 10);
 
 /**
  * POST /api/auth/register
- * Register new user with strict validation
+ * Register new user - stores in localStorage via client
  */
 export async function POST(request: NextRequest) {
   try {
@@ -31,26 +30,20 @@ export async function POST(request: NextRequest) {
       gdprConsent,
     } = body;
 
-    // Get client info
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
     const deviceId = generateDeviceFingerprint(userAgent, ipAddress);
 
-    // Rate limiting
     const rateLimitKey = `${ipAddress}:register`;
     const rateLimit = registerRateLimiter.isAllowed(rateLimitKey);
     
     if (!rateLimit.allowed) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Too many registration attempts. Please try again later.',
-        },
+        { success: false, error: 'Too many registration attempts. Please try again later.' },
         { status: 429 }
       );
     }
 
-    // Validate required fields (mobile is optional)
     if (!name || !email || !password) {
       return NextResponse.json(
         { success: false, error: 'Name, email, and password are required' },
@@ -58,7 +51,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -67,25 +59,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Mobile is optional - generate a placeholder if not provided
-    const mobileToUse = mobile || `+1000000000${Date.now().toString().slice(-4)}`;
-    
-    // Skip mobile validation if mobile was not provided (use placeholder)
-
-    // Validate password policy
-    const passwordCheck = validatePassword(password);
-    if (!passwordCheck.valid) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Password does not meet requirements',
-          details: passwordCheck.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate mobile format only if provided (not a placeholder)
     if (mobile && !/^\+[1-9]\d{1,14}$/.test(mobile)) {
       return NextResponse.json(
         { success: false, error: 'Invalid mobile format. Use international format: +1234567890' },
@@ -93,58 +66,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if email already exists
-    const existingEmail = Array.from(mockUsers.values()).find((u: any) => u.email === email);
-    if (existingEmail) {
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.valid) {
       return NextResponse.json(
-        { success: false, error: 'Email already registered' },
-        { status: 409 }
+        { success: false, error: 'Password does not meet requirements', details: passwordCheck.errors },
+        { status: 400 }
       );
     }
 
-    // Check if mobile already exists
-    const existingMobile = Array.from(mockUsers.values()).find((u: any) => u.mobile === mobileToUse);
-    if (existingMobile) {
-      return NextResponse.json(
-        { success: false, error: 'Mobile number already registered' },
-        { status: 409 }
-      );
-    }
-
-    // Validate GDPR consent (optional with defaults)
-    const gdprConsentData = gdprConsent || { marketing: true, analytics: true, thirdParty: true };
-
-    // Hash password
     const passwordHash = await hashPassword(password);
     const passwordExpiresAt = calculatePasswordExpiry();
 
-    // Create user
     const userId = generateSecureToken(16);
-    const emailVerificationToken = generateSecureToken();
-    const mobileVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
     const newUser = {
       id: userId,
-      email,
-      emailVerified: false,
-      emailVerificationToken,
-      mobile: mobileToUse,
+      email: email.toLowerCase(),
+      emailVerified: true,
+      mobile: mobile || '',
       mobileVerified: false,
-      mobileVerificationCode,
       name,
       passwordHash,
       role: 'user',
-      status: 'pending_verification',
+      status: 'active',
       profile: {
         timezone: 'UTC',
         language: 'en',
-        region: 'north-america',
+        region: 'global',
         currency: 'USD',
       },
       security: {
-        passwordHistory: [{ passwordHash, changedAt: new Date(), changedBy: 'user' }],
-        passwordChangedAt: new Date(),
-        passwordExpiresAt,
+        passwordHistory: [],
+        passwordChangedAt: new Date().toISOString(),
+        passwordExpiresAt: passwordExpiresAt.toISOString(),
         lastLoginAt: null,
         lastLoginIp: null,
         lastLoginDevice: null,
@@ -161,40 +115,28 @@ export async function POST(request: NextRequest) {
         violations: [],
       },
       gdprConsent: {
-        marketing: gdprConsentData.marketing || false,
-        analytics: gdprConsentData.analytics || false,
-        thirdParty: gdprConsentData.thirdParty || false,
-        consentedAt: new Date(),
+        marketing: gdprConsent?.marketing ?? true,
+        analytics: gdprConsent?.analytics ?? true,
+        thirdParty: gdprConsent?.thirdParty ?? true,
+        consentedAt: new Date().toISOString(),
       },
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       deletedAt: null,
     };
 
-    mockUsers.set(userId, newUser);
-
-    // Send verification emails/SMS
-    await sendVerificationEmail(email, emailVerificationToken);
-    if (mobile) {
-      await sendVerificationSMS(mobileToUse, mobileVerificationCode);
-    }
-
-    // Log registration
-    console.log('[AUDIT]', {
-      action: 'ACCOUNT_CREATE',
-      userId,
-      email,
-      ipAddress,
-      userAgent,
-      deviceId,
-      success: true,
-    });
-
+    // Return the user data so client can store it
+    // In production, this would save to a database
     return NextResponse.json({
       success: true,
-      message: 'Registration successful. Please verify your email and mobile.',
-      userId,
-      requiresVerification: true,
+      message: 'Registration successful!',
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        status: newUser.status,
+      },
     });
 
   } catch (error) {
@@ -204,20 +146,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-/**
- * Send verification email
- */
-async function sendVerificationEmail(email: string, token: string) {
-  // In production, send actual email
-  console.log(`Verification email for ${email}: https://pricex.com/verify-email?token=${token}`);
-}
-
-/**
- * Send verification SMS
- */
-async function sendVerificationSMS(mobile: string, code: string) {
-  // In production, send actual SMS
-  console.log(`Verification SMS for ${mobile}: ${code}`);
 }

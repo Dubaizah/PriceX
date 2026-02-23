@@ -36,6 +36,7 @@ export default function LoginPage() {
   const [resendTimer, setResendTimer] = useState(0);
   const [userEmail, setUserEmail] = useState('');
   const [verified, setVerified] = useState(false);
+  const [demoCode, setDemoCode] = useState('');
 
   useEffect(() => {
     if (lockedUntil) {
@@ -86,6 +87,7 @@ export default function LoginPage() {
         setUserEmail(targetEmail);
         if (data.demoCode) {
           setTwoFactorCode(data.demoCode);
+          setDemoCode(data.demoCode);
         }
       } else {
         setError(data.error || 'Failed to send code');
@@ -345,6 +347,15 @@ export default function LoginPage() {
                   </p>
                 </div>
 
+                {/* Demo Code Display */}
+                {demoCode && (
+                  <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-center">
+                    <p className="text-green-500 text-sm mb-2">Your verification code:</p>
+                    <p className="text-3xl font-mono font-bold text-green-500 tracking-wider">{demoCode}</p>
+                    <p className="text-muted-foreground text-xs mt-2">Use this code to sign in</p>
+                  </div>
+                )}
+
                 <div>
                   <input
                     type="text"
@@ -368,8 +379,7 @@ export default function LoginPage() {
                   </button>
                 ) : (
                   <div className="text-center">
-                    <p className="text-green-500 text-sm mb-2">Code sent to your email!</p>
-                    <p className="text-muted-foreground text-xs mb-2">Check your inbox (or spam folder)</p>
+                    <p className="text-green-500 text-sm mb-2">Code sent!</p>
                     {resendTimer > 0 ? (
                       <p className="text-muted-foreground text-sm flex items-center justify-center gap-2">
                         <Timer className="w-4 h-4" />

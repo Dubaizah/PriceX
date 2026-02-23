@@ -32,8 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Verification code sent to your email',
-        // In demo mode, return the code for testing
-        ...(process.env.NODE_ENV !== 'production' && { demoCode: code }),
+        demoCode: code,
       });
     } else {
       return NextResponse.json(

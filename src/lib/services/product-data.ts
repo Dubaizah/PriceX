@@ -1,233 +1,487 @@
 /**
  * PriceX - Unified Product Data Service
- * Combines data from scraper, price APIs, and retailer APIs
+ * Combines data from Amazon, eBay, scrapers, and local database
  */
 
-import { FetchedProductData, FetchedOffer, RETAILER_CONFIGS, RetailerConfig, getRetailerConfig } from './retailer-config';
-import { scraperService } from './scraper';
-import { priceAPIService, api7Service } from './price-api';
-import { amazonPAAPIService, ebayAPIService, walmartAPIService } from './retailer-api';
+import { amazonAPI, AmazonProduct, AMAZON_REGIONS } from './amazon-api';
+import { ebayAPI, EbayProduct, EBAY_ENDPOINTS } from './ebay-api';
+import { scraper, ScrapedProduct, RETAILER_SCRAPER_CONFIGS } from './scraper';
+import { GLOBAL_SAMPLE_PRODUCTS } from './sample-data';
+import { getSellersByRegion, getSellersByType, GLOBAL_SELLERS, GlobalSeller } from './global-sellers';
+import { Product } from '@/types/product-data';
 
-export type DataSource = 'scraper' | 'priceapi' | 'api7' | 'amazon' | 'ebay' | 'walmart' | 'all';
-
-interface FetchOptions {
-  sources?: DataSource[];
-  useCache?: boolean;
-  cacheDuration?: number;
-  timeout?: number;
+export interface UnifiedProduct {
+  id: string;
+  name: string;
+  brand: string;
+  description?: string;
+  imageUrl: string;
+  category?: string;
+  rating?: number;
+  reviewCount?: number;
+  prices: PricePoint[];
+  tags?: string[];
+  lastUpdated: Date;
+  sources: string[];
 }
 
-interface FetchResult {
-  success: boolean;
-  data?: FetchedProductData[];
-  errors?: string[];
-  source: DataSource;
+export interface PricePoint {
+  retailer: string;
+  retailerId: string;
+  retailerLogo: string;
+  price: number;
+  originalPrice?: number;
+  currency: string;
+  availability: string;
+  condition: string;
+  url: string;
+  shipping?: {
+    cost: number;
+    freeShipping: boolean;
+    estimatedDelivery?: string;
+  };
+  isPrime?: boolean;
+  rating?: number;
 }
 
-class UnifiedProductService {
-  private defaultSources: DataSource[] = ['priceapi', 'amazon'];
+export interface SearchOptions {
+  query: string;
+  category?: string;
+  region?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  brands?: string[];
+  sortBy?: 'price_asc' | 'price_desc' | 'rating' | 'relevance';
+  limit?: number;
+}
 
-  async fetchProductByUrl(url: string, options: FetchOptions = {}): Promise<FetchResult> {
-    const sources = options.sources || this.defaultSources;
-    const retailer = this.detectRetailer(url);
+export interface SearchResponse {
+  products: UnifiedProduct[];
+  total: number;
+  sources: string[];
+  aggregatedAt: Date;
+}
 
-    if (!retailer) {
-      return {
-        success: false,
-        errors: ['Unknown retailer'],
-        source: 'all',
-      };
-    }
+export class ProductDataService {
+  private useLiveData: boolean;
 
-    for (const source of sources) {
-      try {
-        let result: FetchedProductData | null = null;
-
-        switch (source) {
-          case 'scraper':
-            const scrapeResult = await scraperService.scrapeProduct(url, {
-              useCache: options.useCache ?? true,
-              cacheDuration: options.cacheDuration,
-              timeout: options.timeout,
-            });
-            if (scrapeResult.success && scrapeResult.data) {
-              result = scrapeResult.data;
-            }
-            break;
-
-          case 'amazon':
-            result = await this.fetchFromAmazon(url);
-            break;
-
-          case 'ebay':
-            result = await this.fetchFromEbay(url);
-            break;
-
-          case 'walmart':
-            result = await this.fetchFromWalmart(url);
-            break;
-
-          case 'priceapi':
-            result = await this.fetchFromPriceAPI(url);
-            break;
-
-          case 'api7':
-            result = await this.fetchFromAPI7(url);
-            break;
-        }
-
-        if (result) {
-          return {
-            success: true,
-            data: [result],
-            source,
-          };
-        }
-      } catch (error) {
-        console.error(`Error fetching from ${source}:`, error);
-        continue;
-      }
-    }
-
-    return {
-      success: false,
-      errors: ['All data sources failed'],
-      source: 'all',
-    };
+  constructor() {
+    // Use live data if API keys are available
+    this.useLiveData = !!(
+      process.env.AMAZON_ACCESS_KEY ||
+      process.env.EBAY_API_KEY ||
+      process.env.SCRAPER_API_KEY
+    );
   }
 
-  async fetchProductsFromMultipleRetailers(
-    productQuery: string,
-    retailers: string[] = ['amazon', 'bestbuy', 'walmart', 'target', 'ebay', 'newegg'],
-    options: FetchOptions = {}
-  ): Promise<FetchResult> {
-    const allResults: FetchedProductData[] = [];
-    const errors: string[] = [];
-
-    for (const retailerId of retailers) {
-      try {
-        const results = await this.fetchFromRetailer(retailerId, productQuery);
-        if (results.length > 0) {
-          allResults.push(...results);
-        }
-      } catch (error) {
-        errors.push(`Failed to fetch from ${retailerId}: ${error}`);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    if (allResults.length === 0 && errors.length > 0) {
-      return {
-        success: false,
-        errors,
-        source: 'all',
-      };
-    }
-
-    return {
-      success: true,
-      data: allResults.sort((a, b) => a.price - b.price),
-      source: 'all',
-    };
-  }
-
-  private async fetchFromRetailer(retailerId: string, query: string): Promise<FetchedProductData[]> {
-    const config = getRetailerConfig(retailerId);
+  /**
+   * Search products across all sources
+   */
+  async search(options: SearchOptions): Promise<SearchResponse> {
+    const { query, limit = 24, region = 'global' } = options;
     
-    if (!config) {
+    const results: UnifiedProduct[] = [];
+    const sources: string[] = [];
+
+    // 1. Search local database (sample products)
+    const localProducts = this.searchLocalProducts(query, limit);
+    if (localProducts.length > 0) {
+      results.push(...localProducts);
+      sources.push('local');
+    }
+
+    // 2. Search Amazon (all regions)
+    if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
+      try {
+        const amazonResults = await this.searchAmazon(query, region, limit);
+        if (amazonResults.length > 0) {
+          results.push(...amazonResults);
+          sources.push('amazon');
+        }
+      } catch (error) {
+        console.error('Amazon search error:', error);
+      }
+    }
+
+    // 3. Search eBay
+    if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
+      try {
+        const ebayResults = await this.searchEbay(query, region, limit);
+        if (ebayResults.length > 0) {
+          results.push(...ebayResults);
+          sources.push('ebay');
+        }
+      } catch (error) {
+        console.error('eBay search error:', error);
+      }
+    }
+
+    // 4. Scrape other retailers
+    if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
+      try {
+        const scrapedResults = await this.scrapeRetailers(query, limit);
+        if (scrapedResults.length > 0) {
+          results.push(...scrapedResults);
+          sources.push('scraped');
+        }
+      } catch (error) {
+        console.error('Scraper error:', error);
+      }
+    }
+
+    // Deduplicate and sort results
+    const unified = this.deduplicateAndSort(results, options);
+
+    return {
+      products: unified.slice(0, limit),
+      total: unified.length,
+      sources: [...new Set(sources)],
+      aggregatedAt: new Date(),
+    };
+  }
+
+  /**
+   * Get products by category
+   */
+  async getByCategory(categoryId: string, limit: number = 24): Promise<SearchResponse> {
+    const localProducts = GLOBAL_SAMPLE_PRODUCTS.filter(
+      p => p.categoryId === categoryId
+    ).slice(0, limit);
+
+    const products: UnifiedProduct[] = localProducts.map(p => ({
+      id: p.id,
+      name: p.name,
+      brand: p.brand,
+      description: p.description,
+      imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+      category: p.category?.name,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      prices: p.pricePoints?.map(pp => ({
+        retailer: pp.retailer?.name || 'Unknown',
+        retailerId: pp.retailerId,
+        retailerLogo: pp.retailer?.logo || '',
+        price: pp.price,
+        originalPrice: pp.originalPrice,
+        currency: pp.currency || 'USD',
+        availability: pp.availability || 'in_stock',
+        condition: pp.condition || 'new',
+        url: pp.url || '',
+        shipping: pp.shippingCost ? {
+          cost: pp.shippingCost,
+          freeShipping: pp.shippingCost === 0,
+        } : undefined,
+      })) || [],
+      tags: p.tags,
+      lastUpdated: p.updatedAt,
+      sources: ['local'],
+    }));
+
+    return {
+      products,
+      total: products.length,
+      sources: ['local'],
+      aggregatedAt: new Date(),
+    };
+  }
+
+  /**
+   * Get global sellers by region
+   */
+  getGlobalSellers(region?: string): GlobalSeller[] {
+    if (region && region !== 'global') {
+      return getSellersByRegion(region);
+    }
+    return GLOBAL_SELLERS;
+  }
+
+  /**
+   * Get all available regions
+   */
+  getRegions(): Array<{ id: string; name: string; sellers: number }> {
+    const regions = [
+      { id: 'north-america', name: 'North America' },
+      { id: 'south-america', name: 'South America' },
+      { id: 'europe', name: 'Europe' },
+      { id: 'asia', name: 'Asia Pacific' },
+      { id: 'middle-east', name: 'Middle East' },
+      { id: 'africa', name: 'Africa' },
+      { id: 'oceania', name: 'Oceania' },
+    ];
+
+    return regions.map(r => ({
+      ...r,
+      sellers: getSellersByRegion(r.id).length,
+    }));
+  }
+
+  /**
+   * Get deals from all sources
+   */
+  async getDeals(limit: number = 20): Promise<SearchResponse> {
+    const products: UnifiedProduct[] = [];
+
+    // Get deals from sample products
+    const dealProducts = GLOBAL_SAMPLE_PRODUCTS
+      .filter(p => p.pricePoints?.some(pp => pp.discountPercent && pp.discountPercent > 10))
+      .slice(0, limit);
+
+    for (const p of dealProducts) {
+      products.push({
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        description: p.description,
+        imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+        category: p.category?.name,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        prices: p.pricePoints?.map(pp => ({
+          retailer: pp.retailer?.name || 'Unknown',
+          retailerId: pp.retailerId,
+          retailerLogo: pp.retailer?.logo || '',
+          price: pp.price,
+          originalPrice: pp.originalPrice,
+          currency: pp.currency || 'USD',
+          availability: pp.availability || 'in_stock',
+          condition: pp.condition || 'new',
+          url: pp.url || '',
+          shipping: pp.shippingCost ? {
+            cost: pp.shippingCost,
+            freeShipping: pp.shippingCost === 0,
+          } : undefined,
+        })) || [],
+        tags: p.tags,
+        lastUpdated: p.updatedAt,
+        sources: ['local'],
+      });
+    }
+
+    return {
+      products,
+      total: products.length,
+      sources: ['local'],
+      aggregatedAt: new Date(),
+    };
+  }
+
+  // Private methods
+
+  private searchLocalProducts(query: string, limit: number): UnifiedProduct[] {
+    const q = query.toLowerCase();
+    const matches = GLOBAL_SAMPLE_PRODUCTS.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      p.brand.toLowerCase().includes(q) ||
+      p.tags?.some(t => t.toLowerCase().includes(q))
+    ).slice(0, limit);
+
+    return matches.map(p => ({
+      id: p.id,
+      name: p.name,
+      brand: p.brand,
+      description: p.description,
+      imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+      category: p.category?.name,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      prices: p.pricePoints?.map(pp => ({
+        retailer: pp.retailer?.name || 'Unknown',
+        retailerId: pp.retailerId,
+        retailerLogo: pp.retailer?.logo || '',
+        price: pp.price,
+        originalPrice: pp.originalPrice,
+        currency: pp.currency || 'USD',
+        availability: pp.availability || 'in_stock',
+        condition: pp.condition || 'new',
+        url: pp.url || '',
+        shipping: pp.shippingCost ? {
+          cost: pp.shippingCost,
+          freeShipping: pp.shippingCost === 0,
+        } : undefined,
+        isPrime: pp.retailer?.name?.toLowerCase().includes('amazon'),
+      })) || [],
+      tags: p.tags,
+      lastUpdated: p.updatedAt,
+      sources: ['local'],
+    }));
+  }
+
+  private async searchAmazon(query: string, region: string, limit: number): Promise<UnifiedProduct[]> {
+    try {
+      // Search all Amazon regions
+      const results = await amazonAPI.searchAllRegions(query, 3);
+      
+      // Group by product name and convert to unified format
+      const productMap = new Map<string, UnifiedProduct>();
+      
+      for (const product of results.products) {
+        const key = product.title.toLowerCase().substring(0, 50);
+        
+        if (!productMap.has(key)) {
+          productMap.set(key, {
+            id: `amazon_${product.asin}`,
+            name: product.title,
+            brand: product.brand || this.extractBrand(product.title),
+            imageUrl: product.imageUrl,
+            rating: product.rating,
+            reviewCount: product.reviewCount,
+            prices: [],
+            lastUpdated: new Date(),
+            sources: ['amazon'],
+          });
+        }
+        
+        const unified = productMap.get(key)!;
+        unified.prices.push({
+          retailer: `Amazon ${AMAZON_REGIONS[region as keyof typeof AMAZON_REGIONS]?.country || region}`,
+          retailerId: `amazon-${region}`,
+          retailerLogo: '/retailers/amazon.svg',
+          price: product.price,
+          originalPrice: product.originalPrice,
+          currency: product.currency,
+          availability: product.availability,
+          condition: 'new',
+          url: product.url,
+          isPrime: product.primeEligible,
+        });
+        
+        if (!unified.sources.includes('amazon')) {
+          unified.sources.push('amazon');
+        }
+      }
+
+      return Array.from(productMap.values()).slice(0, limit);
+    } catch (error) {
+      console.error('Amazon search error:', error);
       return [];
     }
-
-    if (config.dataSource === 'api') {
-      switch (retailerId) {
-        case 'amazon':
-          return await amazonPAAPIService.searchProducts(query);
-        case 'ebay':
-          return await ebayAPIService.searchProducts(query);
-        case 'walmart':
-          return await walmartAPIService.searchProducts(query);
-      }
-    }
-
-    return [];
   }
 
-  private async fetchFromAmazon(url: string): Promise<FetchedProductData | null> {
-    const asinMatch = url.match(/(?:dp|product|ASIN)[/=]([A-Z0-9]{10})/i);
-    if (asinMatch) {
-      return await amazonPAAPIService.getProductDetails(asinMatch[1]);
-    }
-    return null;
-  }
-
-  private async fetchFromEbay(url: string): Promise<FetchedProductData | null> {
-    const itemIdMatch = url.match(/itm[/=](\d+)/);
-    if (itemIdMatch) {
-      const results = await ebayAPIService.searchProducts(itemIdMatch[1], { limit: 1 });
-      return results[0] || null;
-    }
-    return null;
-  }
-
-  private async fetchFromWalmart(url: string): Promise<FetchedProductData | null> {
-    const productIdMatch = url.match(/ip\/[^/]+\/(\d+)/);
-    if (productIdMatch) {
-      const results = await walmartAPIService.searchProducts(productIdMatch[1], { limit: 1 });
-      return results[0] || null;
-    }
-    return null;
-  }
-
-  private async fetchFromPriceAPI(url: string): Promise<FetchedProductData | null> {
-    const asinMatch = url.match(/(?:dp|product|ASIN)[/=]([A-Z0-9]{10})/i);
-    if (asinMatch) {
-      return await priceAPIService.getProductByASIN(asinMatch[1]);
-    }
-    return null;
-  }
-
-  private async fetchFromAPI7(url: string): Promise<FetchedProductData | null> {
-    return null;
-  }
-
-  private detectRetailer(url: string): RetailerConfig | undefined {
+  private async searchEbay(query: string, region: string, limit: number): Promise<UnifiedProduct[]> {
     try {
-      const hostname = new URL(url).hostname.toLowerCase();
+      const results = await ebayAPI.searchProducts(query, region as any, limit);
       
-      for (const config of RETAILER_CONFIGS) {
-        if (hostname.includes(config.domain.replace('www.', ''))) {
-          return config;
-        }
-      }
-    } catch (e) {
-      console.error('Invalid URL:', e);
+      return results.products.map(product => ({
+        id: `ebay_${product.id}`,
+        name: product.title,
+        brand: product.brand || this.extractBrand(product.title),
+        imageUrl: product.imageUrl,
+        rating: product.rating,
+        reviewCount: product.reviewCount,
+        prices: [{
+          retailer: 'eBay',
+          retailerId: 'ebay',
+          retailerLogo: '/retailers/ebay.svg',
+          price: product.price,
+          originalPrice: product.originalPrice,
+          currency: product.currency,
+          availability: product.availability,
+          condition: product.condition,
+          url: product.url,
+          shipping: product.shipping ? {
+            cost: product.shipping.cost,
+            freeShipping: product.shipping.cost === 0,
+            estimatedDelivery: product.shipping.estimatedDelivery,
+          } : undefined,
+        }],
+        lastUpdated: new Date(),
+        sources: ['ebay'],
+      }));
+    } catch (error) {
+      console.error('eBay search error:', error);
+      return [];
     }
+  }
+
+  private async scrapeRetailers(query: string, limit: number): Promise<UnifiedProduct[]> {
+    try {
+      const results = await scraper.getUnifiedResults(query);
+      
+      return results.slice(0, limit).map(product => ({
+        id: product.id,
+        name: product.name,
+        brand: product.brand,
+        imageUrl: product.imageUrl,
+        prices: [{
+          retailer: product.retailer.name,
+          retailerId: product.retailer.id,
+          retailerLogo: product.retailer.logo,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          currency: product.currency,
+          availability: product.availability,
+          condition: product.condition,
+          url: product.url,
+          shipping: product.shipping ? {
+            cost: product.shipping.cost,
+            freeShipping: product.shipping.freeShipping,
+            estimatedDelivery: product.shipping.estimatedDelivery,
+          } : undefined,
+        }],
+        lastUpdated: product.lastUpdated,
+        sources: ['scraped'],
+      }));
+    } catch (error) {
+      console.error('Scraper error:', error);
+      return [];
+    }
+  }
+
+  private deduplicateAndSort(products: UnifiedProduct[], options: SearchOptions): UnifiedProduct[] {
+    // Deduplicate by name similarity
+    const seen = new Set<string>();
+    const deduped: UnifiedProduct[] = [];
+
+    for (const product of products) {
+      const key = product.name.toLowerCase().substring(0, 30);
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(product);
+      }
+    }
+
+    // Sort
+    switch (options.sortBy) {
+      case 'price_asc':
+        deduped.sort((a, b) => {
+          const priceA = a.prices[0]?.price || Infinity;
+          const priceB = b.prices[0]?.price || Infinity;
+          return priceA - priceB;
+        });
+        break;
+      case 'price_desc':
+        deduped.sort((a, b) => {
+          const priceA = a.prices[0]?.price || 0;
+          const priceB = b.prices[0]?.price || 0;
+          return priceB - priceA;
+        });
+        break;
+      case 'rating':
+        deduped.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      default:
+        // Relevance - keep original order
+        break;
+    }
+
+    return deduped;
+  }
+
+  private extractBrand(title: string): string {
+    const knownBrands = [
+      'Apple', 'Samsung', 'Sony', 'Nike', 'Adidas', 'LG', 'Dell', 'HP',
+      'ASUS', 'MSI', 'Lenovo', 'Acer', 'Canon', 'Nikon', 'Dyson', 'Bose',
+      'JBL', 'Fitbit', 'Garmin', 'GoPro', 'Razer', 'Logitech', 'Microsoft'
+    ];
     
-    return undefined;
-  }
-
-  async getPriceComparison(urls: string[]): Promise<FetchedProductData[]> {
-    const results: FetchedProductData[] = [];
-
-    for (const url of urls) {
-      const result = await this.fetchProductByUrl(url);
-      if (result.success && result.data) {
-        results.push(...result.data);
+    for (const brand of knownBrands) {
+      if (title.toLowerCase().includes(brand.toLowerCase())) {
+        return brand;
       }
     }
-
-    return results.sort((a, b) => a.price - b.price);
-  }
-
-  getRetailers(): RetailerConfig[] {
-    return RETAILER_CONFIGS;
-  }
-
-  getRetailer(id: string): RetailerConfig | undefined {
-    return getRetailerConfig(id);
+    return 'Unknown';
   }
 }
 
-export const unifiedProductService = new UnifiedProductService();
-export default unifiedProductService;
+// Export singleton instance
+export const productService = new ProductDataService();

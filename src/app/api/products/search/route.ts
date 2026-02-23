@@ -1,6 +1,7 @@
 /**
  * PriceX - Product Search API
  * AI-powered search with filters, facets, and suggestions
+ * Now uses unified product service for global results
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,6 +14,7 @@ import {
 } from '@/types/product-data';
 import { CATEGORIES, getCategoryById } from '@/types/product';
 import { GLOBAL_SAMPLE_PRODUCTS } from '@/lib/services/sample-data';
+import { productService, SearchOptions } from '@/lib/services/product-data';
 
 // Use global sample products with retailers from all regions
 const mockProducts: Product[] = GLOBAL_SAMPLE_PRODUCTS;
@@ -152,6 +154,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '24');
     const sort = (searchParams.get('sort') as SortField) || 'relevance';
     const direction = (searchParams.get('direction') as 'asc' | 'desc') || 'desc';
+    const region = searchParams.get('region') || 'global';
     
     // Filter parameters
     const minPrice = parseFloat(searchParams.get('minPrice') || '0');
@@ -159,52 +162,76 @@ export async function GET(request: NextRequest) {
     const brands = searchParams.get('brands')?.split(',').filter(Boolean) || [];
     const minRating = parseFloat(searchParams.get('minRating') || '0');
     const inStock = searchParams.get('inStock') === 'true';
-    
-    // Filter products
-    let filteredProducts = mockProducts.filter(product => {
-      // Text search
-      if (query) {
-        const searchFields = [
-          product.name,
-          product.brand,
-          product.model,
-          product.sku,
-          product.description,
-        ].join(' ').toLowerCase();
+
+    // If there's a search query, use the unified product service
+    if (query) {
+      const searchOptions: SearchOptions = {
+        query,
+        category: categoryId || undefined,
+        region,
+        minPrice,
+        maxPrice,
+        brands: brands.length > 0 ? brands : undefined,
+        sortBy: sort as any,
+        limit,
+      };
+
+      const unifiedResults = await productService.search(searchOptions);
+
+      // Convert to old format for compatibility
+      const filteredProducts = unifiedResults.products.filter(product => {
+        // Price filter
+        const bestPrice = product.prices[0]?.price || 0;
+        if (bestPrice < minPrice || bestPrice > maxPrice) return false;
         
-        if (!searchFields.includes(query.toLowerCase())) {
-          return false;
-        }
+        // Brand filter
+        if (brands.length > 0 && !brands.includes(product.brand)) return false;
+        
+        // Rating filter
+        if (product.rating && product.rating < minRating) return false;
+        
+        // Stock filter
+        if (inStock && product.prices[0]?.availability !== 'in_stock') return false;
+        
+        return true;
+      });
+
+      // Sort
+      if (sort === 'price_asc') {
+        filteredProducts.sort((a, b) => (a.prices[0]?.price || 0) - (b.prices[0]?.price || 0));
+      } else if (sort === 'price_desc') {
+        filteredProducts.sort((a, b) => (b.prices[0]?.price || 0) - (a.prices[0]?.price || 0));
+      } else if (sort === 'rating') {
+        filteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       }
-      
-      // Category filter
-      if (categoryId && product.categoryId !== categoryId) {
-        return false;
-      }
-      
-      // Price filter
-      const bestPrice = product.pricePoints[0]?.price || 0;
-      if (bestPrice < minPrice || bestPrice > maxPrice) {
-        return false;
-      }
-      
-      // Brand filter
-      if (brands.length > 0 && !brands.includes(product.brand)) {
-        return false;
-      }
-      
-      // Rating filter
-      if (product.rating < minRating) {
-        return false;
-      }
-      
-      // Stock filter
-      if (inStock && product.availability !== 'in_stock') {
-        return false;
-      }
-      
-      return true;
-    });
+
+      const result: SearchResult = {
+        products: filteredProducts.slice((page - 1) * limit, page * limit) as any,
+        total: filteredProducts.length,
+        page,
+        limit,
+        totalPages: Math.ceil(filteredProducts.length / limit),
+        facets: {
+          categories: [],
+          brands: [],
+          priceRanges: [],
+          ratings: [],
+          attributes: {},
+          availability: [],
+        },
+        suggestions: [],
+      };
+
+      return NextResponse.json(result);
+    }
+
+    // Otherwise, use local products (no query = show all)
+    let filteredProducts = mockProducts;
+    
+    // Category filter
+    if (categoryId) {
+      filteredProducts = filteredProducts.filter(product => product.categoryId === categoryId);
+    }
     
     // Sort products
     filteredProducts = sortProducts(filteredProducts, sort, direction);

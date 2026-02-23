@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { unifiedProductService } from '@/lib/services/product-data';
+import { productService } from '@/lib/services/product-data';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     let result;
 
     if (urls && urls.length > 0) {
-      const products = await unifiedProductService.getPriceComparison(urls);
+      const products = await productService.getPriceComparison(urls);
       return NextResponse.json({
         success: true,
         products,
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     if (query) {
       const retailersToFetch = retailers || ['amazon', 'bestbuy', 'walmart', 'target', 'ebay', 'newegg'];
-      result = await unifiedProductService.fetchProductsFromMultipleRetailers(
+      result = await productService.fetchProductsFromMultipleRetailers(
         query,
         retailersToFetch,
         { useCache, cacheDuration }
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await unifiedProductService.fetchProductByUrl(url);
+    const result = await productService.fetchProductByUrl(url);
 
     return NextResponse.json({
       success: result.success,

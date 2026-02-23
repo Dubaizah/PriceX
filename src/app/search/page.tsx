@@ -45,8 +45,11 @@ export default function SearchPage() {
       const response = await fetch(`/api/products/search?q=${encodeURIComponent(q)}&limit=50`);
       const data = await response.json();
       
-      if (data.success && data.products) {
-        const products: SearchProduct[] = data.products.map((p: any) => ({
+      // Handle both response formats
+      const products = data.products || data;
+      
+      if (products && Array.isArray(products) && products.length > 0) {
+        const searchProducts: SearchProduct[] = products.map((p: any) => ({
           id: p.id,
           name: p.name,
           brand: p.brand,
@@ -60,7 +63,7 @@ export default function SearchPage() {
             currency: pp.currency || 'USD',
           })) || [],
         }));
-        setResults(products);
+        setResults(searchProducts);
       } else {
         setResults([]);
       }

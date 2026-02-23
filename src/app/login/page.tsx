@@ -1,6 +1,6 @@
 /**
  * PriceX - Login Page
- * Secure login with mandatory 2FA via SMS
+ * Secure login with mandatory 2FA via Email
  */
 
 'use client';
@@ -35,6 +35,7 @@ export default function LoginPage() {
   const [sendingCode, setSendingCode] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     if (lockedUntil) {
@@ -52,7 +53,6 @@ export default function LoginPage() {
     }
   }, [lockedUntil]);
 
-  // Resend countdown timer
   useEffect(() => {
     if (codeSent && resendTimer > 0) {
       const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
@@ -61,10 +61,10 @@ export default function LoginPage() {
   }, [codeSent, resendTimer]);
 
   const handleSendOTP = async () => {
-    const targetMobile = loginMethod === 'mobile' ? mobile : localStorage.getItem('pricex-user-mobile') || mobile;
+    const targetEmail = userEmail || email;
     
-    if (!targetMobile) {
-      setError('Mobile number not found. Please register with a mobile number.');
+    if (!targetEmail) {
+      setError('Please enter your email address');
       return;
     }
 
@@ -72,10 +72,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/auth/otp', {
+      const response = await fetch('/api/auth/otp-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile: targetMobile, purpose: 'login' }),
+        body: JSON.stringify({ email: targetEmail, purpose: 'login' }),
       });
 
       const data = await response.json();
@@ -83,9 +83,12 @@ export default function LoginPage() {
       if (data.success) {
         setCodeSent(true);
         setResendTimer(60);
-        // In demo mode, show the code
+        setUserEmail(targetEmail);
+        // In demo mode, show the code in console
         if (data.demoCode) {
           console.log('Demo OTP:', data.demoCode);
+          // For demo, auto-fill the code
+          setTwoFactorCode(data.demoCode);
         }
       } else {
         setError(data.error || 'Failed to send code');
@@ -141,14 +144,22 @@ export default function LoginPage() {
       }
       setError(result.message || 'Login failed');
     } else {
-      // Store mobile for OTP
-      if (loginMethod === 'email' && user?.mobile) {
-        localStorage.setItem('pricex-user-mobile', user.mobile);
+      // Store email for OTP
+      if (loginMethod === 'email') {
+        setUserEmail(email);
+      } else if (user?.email) {
+        setUserEmail(user.email);
       }
       // Credentials valid, proceed to 2FA
       setStep('2fa');
       // Send OTP automatically
-      setTimeout(handleSendOTP, 500);
+      setTimeout(() => {
+        const targetEmail = loginMethod === 'email' ? email : (user?.email || '');
+        if (targetEmail) {
+          setUserEmail(targetEmail);
+          handleSendOTP();
+        }
+      }, 500);
     }
   };
 
@@ -160,9 +171,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Verify OTP
-    const targetMobile = loginMethod === 'mobile' ? mobile : localStorage.getItem('pricex-user-mobile') || mobile;
-    
     // Complete login
     const identifier = loginMethod === 'email' ? email : mobile;
     const users = JSON.parse(localStorage.getItem('pricex-users') || '[]');
@@ -337,7 +345,7 @@ export default function LoginPage() {
                   </div>
                   <h2 className="text-xl font-semibold mb-2">Two-Factor Authentication</h2>
                   <p className="text-muted-foreground text-sm">
-                    Enter the 6-digit code sent to your mobile
+                    Enter the 6-digit code sent to your email
                   </p>
                 </div>
 
@@ -360,11 +368,12 @@ export default function LoginPage() {
                     className="w-full h-12 bg-[var(--pricex-yellow)] text-black font-semibold rounded-xl hover:bg-[var(--pricex-yellow-dark)] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
-                    {sendingCode ? 'Sending...' : 'Send Code'}
+                    {sendingCode ? 'Sending...' : 'Send Code to Email'}
                   </button>
                 ) : (
                   <div className="text-center">
-                    <p className="text-green-500 text-sm mb-2">Code sent! Check your mobile.</p>
+                    <p className="text-green-500 text-sm mb-2">Code sent to your email!</p>
+                    <p className="text-muted-foreground text-xs mb-2">Check your inbox (or spam folder)</p>
                     {resendTimer > 0 ? (
                       <p className="text-muted-foreground text-sm flex items-center justify-center gap-2">
                         <Timer className="w-4 h-4" />
@@ -383,7 +392,7 @@ export default function LoginPage() {
                 )}
 
                 <p className="text-center text-sm text-muted-foreground">
-                  Demo mode: Code shown in console or use any 6 digits
+                  Demo: Code is shown in browser console
                 </p>
 
                 <button

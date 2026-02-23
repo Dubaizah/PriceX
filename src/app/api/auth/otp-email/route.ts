@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Verification code sent to your email',
-        demoCode: code,
       });
     } else {
       return NextResponse.json(

@@ -50,10 +50,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate required fields
-    if (!name || !email || !mobile || !password) {
+    // Validate required fields (mobile is optional)
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { success: false, error: 'All fields are required' },
+        { success: false, error: 'Name, email, and password are required' },
         { status: 400 }
       );
     }
@@ -67,14 +67,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate mobile format (basic - enhance based on region)
-    const mobileRegex = /^\+[1-9]\d{1,14}$/;
-    if (!mobileRegex.test(mobile)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid mobile format. Use international format: +1234567890' },
-        { status: 400 }
-      );
-    }
+    // Mobile is optional - generate a placeholder if not provided
+    const mobileToUse = mobile || `+1000000000${Date.now().toString().slice(-4)}`;
+    
+    // Skip mobile validation if mobile was not provided (use placeholder)
 
     // Validate password policy
     const passwordCheck = validatePassword(password);
@@ -89,6 +85,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate mobile format only if provided (not a placeholder)
+    if (mobile && !/^\+[1-9]\d{1,14}$/.test(mobile)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid mobile format. Use international format: +1234567890' },
+        { status: 400 }
+      );
+    }
+
     // Check if email already exists
     const existingEmail = Array.from(mockUsers.values()).find((u: any) => u.email === email);
     if (existingEmail) {
@@ -99,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if mobile already exists
-    const existingMobile = Array.from(mockUsers.values()).find((u: any) => u.mobile === mobile);
+    const existingMobile = Array.from(mockUsers.values()).find((u: any) => u.mobile === mobileToUse);
     if (existingMobile) {
       return NextResponse.json(
         { success: false, error: 'Mobile number already registered' },
@@ -107,13 +111,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate GDPR consent
-    if (!gdprConsent || typeof gdprConsent !== 'object') {
-      return NextResponse.json(
-        { success: false, error: 'GDPR consent is required' },
-        { status: 400 }
-      );
-    }
+    // Validate GDPR consent (optional with defaults)
+    const gdprConsentData = gdprConsent || { marketing: true, analytics: true, thirdParty: true };
 
     // Hash password
     const passwordHash = await hashPassword(password);
@@ -129,7 +128,7 @@ export async function POST(request: NextRequest) {
       email,
       emailVerified: false,
       emailVerificationToken,
-      mobile,
+      mobile: mobileToUse,
       mobileVerified: false,
       mobileVerificationCode,
       name,
@@ -162,9 +161,9 @@ export async function POST(request: NextRequest) {
         violations: [],
       },
       gdprConsent: {
-        marketing: gdprConsent.marketing || false,
-        analytics: gdprConsent.analytics || false,
-        thirdParty: gdprConsent.thirdParty || false,
+        marketing: gdprConsentData.marketing || false,
+        analytics: gdprConsentData.analytics || false,
+        thirdParty: gdprConsentData.thirdParty || false,
         consentedAt: new Date(),
       },
       createdAt: new Date(),
@@ -176,7 +175,9 @@ export async function POST(request: NextRequest) {
 
     // Send verification emails/SMS
     await sendVerificationEmail(email, emailVerificationToken);
-    await sendVerificationSMS(mobile, mobileVerificationCode);
+    if (mobile) {
+      await sendVerificationSMS(mobileToUse, mobileVerificationCode);
+    }
 
     // Log registration
     console.log('[AUDIT]', {

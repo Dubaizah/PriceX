@@ -42,8 +42,11 @@ export function Header() {
 
   const navLinks = [
     { href: '/', label: t('nav.home') },
+    { href: '/search', label: t('nav.search') || 'Search' },
     { href: '/categories', label: t('nav.categories') },
     { href: '/deals', label: t('nav.deals') },
+    { href: '/compare', label: 'Compare' },
+    { href: '/cashback', label: 'Cashback' },
     { href: '/alerts', label: t('nav.alerts') },
   ];
 
@@ -108,16 +111,16 @@ export function Header() {
 
             {/* Desktop Actions */}
             <div className={`hidden md:flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <button className="p-2 rounded-lg hover:bg-secondary transition-colors relative">
+              <Link href="/alerts" className="p-2 rounded-lg hover:bg-secondary transition-colors relative">
                 <Heart className="w-5 h-5" />
-              </button>
-              <button className="p-2 rounded-lg hover:bg-secondary transition-colors relative">
+              </Link>
+              <Link href="/alerts" className="p-2 rounded-lg hover:bg-secondary transition-colors relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--pricex-yellow)] rounded-full" />
-              </button>
-              <button className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              </Link>
+              <Link href="/login" className="p-2 rounded-lg hover:bg-secondary transition-colors">
                 <User className="w-5 h-5" />
-              </button>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}

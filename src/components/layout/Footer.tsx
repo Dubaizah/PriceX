@@ -26,6 +26,14 @@ export function Footer() {
   const { selectedCountry } = useRegion();
 
   const footerLinks = {
+    quickLinks: [
+      { label: 'Search', href: '/search' },
+      { label: 'Categories', href: '/categories' },
+      { label: 'Deals', href: '/deals' },
+      { label: 'Compare', href: '/compare' },
+      { label: 'Cashback', href: '/cashback' },
+      { label: 'Price Alerts', href: '/alerts' },
+    ],
     company: [
       { label: t('footer.about'), href: '/about' },
       { label: t('footer.careers'), href: '/careers' },

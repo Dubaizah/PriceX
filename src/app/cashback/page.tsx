@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
+import { useLanguage } from '@/context/LanguageContext';
 
 const cashbackStores = [
   { name: 'Amazon', cashback: '2.5%', logo: '📦', color: 'bg-orange-500' },
@@ -29,36 +30,38 @@ const cashbackStores = [
   { name: 'Apple', cashback: '1.0%', logo: '🍎', color: 'bg-gray-400' },
 ];
 
-const howItWorks = [
-  {
-    icon: Zap,
-    title: 'Activate Cashback',
-    description: 'Browse deals and activate cashback before shopping',
-  },
-  {
-    icon: Shopping,
-    title: 'Shop Normally',
-    description: 'Make your purchase as usual on the retailer site',
-  },
-  {
-    icon: CreditCard,
-    title: 'Earn Rewards',
-    description: 'Get cashback credited to your account within 24 hours',
-  },
-  {
-    icon: Gift,
-    title: 'Get Paid',
-    description: 'Withdraw via PayPal, gift card, or donate to charity',
-  },
-];
-
 function Shopping(props: any) {
   return <Zap {...props} />;
 }
 
 export default function CashbackPage() {
+  const { t } = useLanguage();
+  
+  const howItWorks = [
+    {
+      icon: Zap,
+      title: t('cashback.step1'),
+      description: t('cashback.step1Desc'),
+    },
+    {
+      icon: Shopping,
+      title: t('cashback.step2'),
+      description: t('cashback.step2Desc'),
+    },
+    {
+      icon: CreditCard,
+      title: t('cashback.step3'),
+      description: t('cashback.step3Desc'),
+    },
+    {
+      icon: Gift,
+      title: t('cashback.step4'),
+      description: t('cashback.step4Desc'),
+    },
+  ];
+  
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-[120px] pb-20">
@@ -71,22 +74,21 @@ export default function CashbackPage() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--pricex-yellow)]/10 rounded-full text-[var(--pricex-yellow)] font-medium mb-6">
               <Gift className="w-5 h-5" />
-              Earn Money Back on Every Purchase
+              {t('cashback.earn')}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Get Paid to Shop with <span className="text-[var(--pricex-yellow)]">PriceX Cashback</span>
+              {t('cashback.heroTitle')}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Activate cashback at 10,000+ stores and earn up to 40% back on every purchase. 
-              It&apos;s free money - why leave it on the table?
+              {t('cashback.heroDesc')}
             </p>
             <div className="flex items-center justify-center gap-4">
               <button className="h-14 px-8 bg-[var(--pricex-yellow)] text-black font-bold rounded-xl hover:bg-[var(--pricex-yellow-dark)] transition-colors flex items-center gap-2">
-                Start Earning
+                {t('cashback.startEarning')}
                 <ArrowRight className="w-5 h-5" />
               </button>
               <button className="h-14 px-8 border-2 border-border font-semibold rounded-xl hover:border-[var(--pricex-yellow)] transition-colors">
-                How It Works
+                {t('cashback.howItWorks')}
               </button>
             </div>
           </motion.div>
@@ -95,25 +97,25 @@ export default function CashbackPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-16">
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
               <p className="text-3xl font-bold text-[var(--pricex-yellow)]">$50M+</p>
-              <p className="text-muted-foreground">Cashback Paid</p>
+              <p className="text-muted-foreground">{t('cashback.stats.cashbackPaid')}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
               <p className="text-3xl font-bold text-[var(--pricex-yellow)]">10K+</p>
-              <p className="text-muted-foreground">Partner Stores</p>
+              <p className="text-muted-foreground">{t('cashback.stats.partnerStores')}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
               <p className="text-3xl font-bold text-[var(--pricex-yellow)]">5M+</p>
-              <p className="text-muted-foreground">Members</p>
+              <p className="text-muted-foreground">{t('cashback.stats.members')}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border text-center">
               <p className="text-3xl font-bold text-[var(--pricex-yellow)]">40%</p>
-              <p className="text-muted-foreground">Highest Cashback</p>
+              <p className="text-muted-foreground">{t('cashback.stats.highestCashback')}</p>
             </div>
           </div>
 
           {/* Top Stores */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-6">Top Cashback Stores</h2>
+            <h2 className="text-2xl font-bold mb-6">{t('cashback.topStores')}</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {cashbackStores.map((store, index) => (
                 <motion.div
@@ -129,25 +131,25 @@ export default function CashbackPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold">{store.name}</h3>
-                      <p className="text-green-500 font-bold">{store.cashback} cashback</p>
+                      <p className="text-green-500 font-bold">{store.cashback} {t('cashback.cashback')}</p>
                     </div>
                   </div>
                   <button className="w-full py-2 rounded-lg bg-secondary group-hover:bg-[var(--pricex-yellow)]/10 text-sm font-medium transition-colors">
-                    Activate
+                    {t('cashback.activate')}
                   </button>
                 </motion.div>
               ))}
             </div>
             <div className="text-center mt-6">
               <a href="/cashback/stores" className="text-[var(--pricex-yellow)] font-medium hover:underline flex items-center justify-center gap-2">
-                View All 10,000+ Stores <ArrowRight className="w-4 h-4" />
+                {t('cashback.viewAll')} <ArrowRight className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* How It Works */}
           <div className="mb-16">
-            <h2 className="text-2xl font-bold mb-8 text-center">How PriceX Cashback Works</h2>
+            <h2 className="text-2xl font-bold mb-8 text-center">{t('cashback.howItWorksTitle')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {howItWorks.map((step, index) => {
                 const Icon = step.icon;
@@ -182,23 +184,23 @@ export default function CashbackPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-6 rounded-2xl bg-card border border-border">
               <Shield className="w-10 h-10 text-[var(--pricex-yellow)] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Shop Safely</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('cashback.features.shopSafely')}</h3>
               <p className="text-muted-foreground">
-                All purchases are protected. If cashback doesn&apos;t track, we&apos;ll refund you.
+                {t('cashback.features.shopSafelyDesc')}
               </p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
               <Zap className="w-10 h-10 text-[var(--pricex-yellow)] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Fast Payouts</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('cashback.features.fastPayouts')}</h3>
               <p className="text-muted-foreground">
-                Cashback posts within 24 hours. Withdraw anytime via PayPal or gift card.
+                {t('cashback.features.fastPayoutsDesc')}
               </p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
               <TrendingUp className="w-10 h-10 text-[var(--pricex-yellow)] mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Stack Rewards</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('cashback.features.stackRewards')}</h3>
               <p className="text-muted-foreground">
-                Combine with credit card points, coupon codes, and loyalty programs for maximum savings.
+                {t('cashback.features.stackRewardsDesc')}
               </p>
             </div>
           </div>

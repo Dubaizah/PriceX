@@ -83,7 +83,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Admin Header */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-50">
         <div className="h-full px-6 flex items-center justify-between">

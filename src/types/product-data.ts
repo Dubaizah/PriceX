@@ -56,13 +56,36 @@ export interface PricePoint {
   url: string;
   sku: string;
   offerExpiry?: Date;
+  discountPercent?: number;
+  couponCode?: string;
+  couponDiscount?: number;
   shippingCost: number;
   shippingTime: string;
   isOfficialStore: boolean;
   warranty?: string;
   inStock: boolean;
   stockQuantity?: number;
+  stockStatus?: 'in_stock' | 'low_stock' | 'out_of_stock' | 'preorder' | 'limited';
   lastUpdated: Date;
+  priceHistory?: PriceHistoryPoint[];
+  isLightningDeal?: boolean;
+  isDealOfTheDay?: boolean;
+  fulfillment?: 'shipping' | 'pickup' | 'both';
+  additionalOffers?: SubOffer[];
+}
+
+export interface PriceHistoryPoint {
+  date: Date;
+  price: number;
+}
+
+export interface SubOffer {
+  id: string;
+  type: 'bundle' | 'upgrade' | 'accessory' | 'subscription';
+  title: string;
+  price: number;
+  originalPrice?: number;
+  savings?: number;
 }
 
 // Product Image

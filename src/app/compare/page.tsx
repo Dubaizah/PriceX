@@ -11,12 +11,14 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useProduct } from '@/context/ProductContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { ProductComparisonTable } from '@/components/product/ProductComparisonTable';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 
 export default function ComparePage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { 
     comparisonItems, 
     removeFromComparison, 
@@ -32,7 +34,7 @@ export default function ComparePage() {
   }, [comparisonItems]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-[120px] pb-20">
@@ -40,10 +42,10 @@ export default function ComparePage() {
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
             <Link href="/" className="hover:text-foreground transition-colors">
-              Home
+              {t('nav.home')}
             </Link>
             <span>/</span>
-            <span className="text-foreground">Compare</span>
+            <span className="text-foreground">{t('compare.title')}</span>
           </nav>
 
           {/* Page Header */}
@@ -58,16 +60,15 @@ export default function ComparePage() {
                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
-                Back
+                {t('compare.back')}
               </button>
             </div>
             
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Compare Products</h1>
+                <h1 className="text-3xl font-bold mb-2">{t('compare.title')}</h1>
                 <p className="text-muted-foreground">
-                  Side-by-side comparison of {comparisonItems.length} products
-                  {comparisonItems.length > 1 && ' with best deal highlighted in green'}
+                  {t('compare.subtitle')}
                 </p>
               </div>
               
@@ -77,7 +78,7 @@ export default function ComparePage() {
                     onClick={clearComparison}
                     className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Clear all
+                    {t('compare.clearAll')}
                   </button>
                 )}
                 
@@ -87,7 +88,7 @@ export default function ComparePage() {
                     className="flex items-center gap-2 px-4 py-2 bg-[var(--pricex-yellow)] text-black font-medium rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    Add Product
+                    {t('compare.addProduct')}
                   </Link>
                 )}
               </div>
@@ -117,16 +118,16 @@ export default function ComparePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold mb-2">No products to compare</h2>
+              <h2 className="text-xl font-semibold mb-2">{t('compare.noProducts')}</h2>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Add products to your comparison list to see side-by-side comparisons of prices, features, and specifications.
+                {t('compare.addProductDesc')}
               </p>
               <Link
                 href="/search"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--pricex-yellow)] text-black font-semibold rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors"
               >
                 <Plus className="w-5 h-5" />
-                Start Comparing
+                {t('compare.startComparing')}
               </Link>
             </motion.div>
           )}
@@ -139,23 +140,23 @@ export default function ComparePage() {
               transition={{ delay: 0.2 }}
               className="mt-12 p-6 bg-muted/50 rounded-xl"
             >
-              <h3 className="font-semibold mb-4">Comparison Tips</h3>
+              <h3 className="font-semibold mb-4">{t('compare.tips')}</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--pricex-yellow)]">•</span>
-                  <span><strong>Best Deal Highlighted:</strong> The lowest price is automatically highlighted in green for easy identification.</span>
+                  <span><strong>{t('compare.bestDeal')}:</strong> {t('compare.bestDealDesc')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--pricex-yellow)]">•</span>
-                  <span><strong>Store Locations:</strong> Check store locations to find the nearest pickup point or delivery option.</span>
+                  <span><strong>{t('compare.storeLocations')}:</strong> {t('compare.storeLocationsDesc')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--pricex-yellow)]">•</span>
-                  <span><strong>SKU Grouping:</strong> Identical products with the same SKU from different stores are grouped together.</span>
+                  <span><strong>{t('compare.skuGrouping')}:</strong> {t('compare.skuGroupingDesc')}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[var(--pricex-yellow)]">•</span>
-                  <span><strong>Currency Conversion:</strong> Prices are displayed in your selected currency with real-time FX rates.</span>
+                  <span><strong>{t('compare.currencyConversion')}:</strong> {t('compare.currencyConversionDesc')}</span>
                 </li>
               </ul>
             </motion.div>

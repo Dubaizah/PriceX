@@ -8,31 +8,32 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Calendar,
-  Download,
+import { Product, PricePoint } from '@/types';
+import { TrendingUp, TrendingDown, Calendar, Download,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { formatCurrency } from '@/lib/utils';
-
-interface PricePoint {
-  date: string;
-  price: number;
-  retailer: string;
-}
+import { useCurrency } from '@/context/CurrencyContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function PriceHistoryPage() {
   const params = useParams();
+  const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | '1y' | 'all'>('90d');
   const [loading, setLoading] = useState(true);
   
+  // Local type for price history
+  interface PriceHistoryPoint {
+    date: string;
+    price: number;
+    retailer: string;
+  }
+  
   // Mock price history data
-  const [priceHistory, setPriceHistory] = useState<PricePoint[]>([
+  const [priceHistory, setPriceHistory] = useState<PriceHistoryPoint[]>([
     { date: '2024-01-01', price: 1299, retailer: 'Amazon' },
     { date: '2024-01-15', price: 1249, retailer: 'Best Buy' },
     { date: '2024-02-01', price: 1199, retailer: 'Amazon' },
@@ -63,7 +64,7 @@ export default function PriceHistoryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-[120px] pb-20">
@@ -141,7 +142,7 @@ export default function PriceHistoryPage() {
                         isHighest ? 'bg-red-500' : isLowest ? 'bg-green-500' : 'bg-[var(--pricex-yellow)]'
                       }`}
                       style={{ height: `${Math.max(height, 10)}%` }}
-                      title={`${point.date}: $${point.price}`}
+                      title={`${point.date}: ${formatPrice(point.price)}`}
                     />
                     <span className="text-xs text-muted-foreground">
                       {new Date(point.date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
@@ -155,15 +156,15 @@ export default function PriceHistoryPage() {
             <div className="flex items-center justify-center gap-6 mt-6 pt-6 border-t border-border">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                <span className="text-sm">Lowest: {formatCurrency(lowestPrice)}</span>
+                <span className="text-sm">{t('priceHistory.lowest', 'Lowest')}: {formatPrice(lowestPrice)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className="text-sm">Highest: {formatCurrency(highestPrice)}</span>
+                <span className="text-sm">{t('priceHistory.highest', 'Highest')}: {formatPrice(highestPrice)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[var(--pricex-yellow)]" />
-                <span className="text-sm">Average: {formatCurrency(averagePrice)}</span>
+                <span className="text-sm">{t('priceHistory.average', 'Average')}: {formatPrice(averagePrice)}</span>
               </div>
             </div>
           </div>
@@ -172,15 +173,15 @@ export default function PriceHistoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div className="p-6 rounded-2xl bg-card border border-border">
               <p className="text-sm text-muted-foreground mb-2">Current Price</p>
-              <p className="text-2xl font-bold">{formatCurrency(currentPrice)}</p>
+              <p className="text-2xl font-bold">{formatPrice(currentPrice)}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
               <p className="text-sm text-muted-foreground mb-2">Lowest Ever</p>
-              <p className="text-2xl font-bold text-green-500">{formatCurrency(lowestPrice)}</p>
+              <p className="text-2xl font-bold text-green-500">{formatPrice(lowestPrice)}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
               <p className="text-sm text-muted-foreground mb-2">Highest Ever</p>
-              <p className="text-2xl font-bold text-red-500">{formatCurrency(highestPrice)}</p>
+              <p className="text-2xl font-bold text-red-500">{formatPrice(highestPrice)}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
               <p className="text-sm text-muted-foreground mb-2">Change</p>
@@ -239,7 +240,7 @@ export default function PriceHistoryPage() {
                     return (
                       <tr key={index} className="hover:bg-secondary/30">
                         <td className="p-4">{new Date(point.date).toLocaleDateString()}</td>
-                        <td className="p-4 font-semibold">{formatCurrency(point.price)}</td>
+                        <td className="p-4 font-semibold">{formatPrice(point.price)}</td>
                         <td className="p-4">{point.retailer}</td>
                         <td className="p-4">
                           <span className={`text-sm ${change < 0 ? 'text-green-500' : change > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>

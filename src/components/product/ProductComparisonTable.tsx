@@ -282,6 +282,7 @@ export function ProductComparisonTable({ products, onRemoveProduct }: Comparison
                         )}
                         
                         {renderCellValue(
+                          formatPrice,
                           row.type, 
                           value, 
                           product, 
@@ -319,6 +320,7 @@ export function ProductComparisonTable({ products, onRemoveProduct }: Comparison
 
 // Render cell value based on type
 function renderCellValue(
+  formatPrice: (price: number) => string,
   type: ComparisonRow['type'],
   value: any,
   product: Product,
@@ -359,7 +361,7 @@ function renderCellValue(
           
           {/* Price Display */}
           <div className="text-2xl font-bold">
-            ${selected?.price.toFixed(2)}
+            {formatPrice(selected?.price || 0)}
           </div>
           
           {/* Price Point Selector */}
@@ -374,7 +376,7 @@ function renderCellValue(
             >
               {pricePoints.map(pp => (
                 <option key={pp.id} value={pp.id}>
-                  {pp.retailer.name} - ${pp.price}
+                  {pp.retailer.name} - {formatPrice(pp.price)}
                 </option>
               ))}
             </select>

@@ -26,7 +26,7 @@ export function PriceXLogo({ size = 'lg', animated = true, className = '' }: Pri
   const { price: priceSize, x: xSize } = sizeConfig[size];
 
   const LogoContent = (
-    <span className={`inline-flex items-baseline leading-none select-none ${className}`}>
+    <span className={`inline-flex items-baseline leading-none select-none ${className}`} dir="ltr" style={{ flexDirection: 'row', unicodeBidi: 'plaintext' }}>
       <span 
         className={`pricex-logo-price ${priceSize}`}
         style={{ fontFamily: "'Imprint MT Shadow', Georgia, serif" }}
@@ -56,12 +56,14 @@ export function PriceXLogo({ size = 'lg', animated = true, className = '' }: Pri
         staggerChildren: 0.1 
       }}
       className="inline-block"
+      dir="ltr"
     >
       <motion.span
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.6 }}
         className={`inline-flex items-baseline leading-none select-none ${className}`}
+        style={{ flexDirection: 'row', unicodeBidi: 'plaintext' }}
       >
         <span 
           className={`pricex-logo-price ${priceSize}`}
@@ -92,7 +94,7 @@ export function PriceXLogo({ size = 'lg', animated = true, className = '' }: Pri
 // Compact version for header/navbar
 export function PriceXLogoCompact({ className = '' }: { className?: string }) {
   return (
-    <span className={`inline-flex items-baseline leading-none select-none ${className}`}>
+    <span className={`inline-flex items-baseline leading-none select-none ${className}`} dir="ltr" style={{ flexDirection: 'row', unicodeBidi: 'plaintext' }}>
       <span 
         className="text-2xl md:text-3xl"
         style={{ fontFamily: "'Imprint MT Shadow', Georgia, serif" }}

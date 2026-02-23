@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/providers";
+import { PageBackground } from "@/components/ui/PageBackground";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -119,6 +120,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased min-h-screen">
+        <PageBackground />
         <Providers>
           {children}
         </Providers>

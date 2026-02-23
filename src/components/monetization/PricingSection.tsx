@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { Check, Star, Zap, Shield, Crown } from "lucide-react";
+import { useCurrency } from "@/context/CurrencyContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface PricingPlan {
   id: string;
-  name: string;
+  nameKey: string;
   price: number;
-  period: string;
-  description: string;
+  periodKey: string;
+  descriptionKey: string;
   features: string[];
   highlighted?: boolean;
   icon: React.ReactNode;
@@ -17,81 +19,83 @@ interface PricingPlan {
 const plans: PricingPlan[] = [
   {
     id: "free",
-    name: "Free",
+    nameKey: "pricing.free.name",
     price: 0,
-    period: "forever",
-    description: "Basic price tracking for casual shoppers",
+    periodKey: "pricing.free.period",
+    descriptionKey: "pricing.free.description",
     icon: <Star className="w-5 h-5" />,
     features: [
-      "Price comparisons for 1,000 products",
-      "5 price alerts",
-      "Basic deal scores",
-      "Web access only",
-      "English language",
+      "pricing.free.feature1",
+      "pricing.free.feature2",
+      "pricing.free.feature3",
+      "pricing.free.feature4",
+      "pricing.free.feature5",
     ],
   },
   {
     id: "premium",
-    name: "Premium",
+    nameKey: "pricing.premium.name",
     price: 9.99,
-    period: "month",
-    description: "For serious savvers who want the best deals",
+    periodKey: "pricing.premium.period",
+    descriptionKey: "pricing.premium.description",
     highlighted: true,
     icon: <Zap className="w-5 h-5" />,
     features: [
-      "Unlimited product comparisons",
-      "Unlimited price alerts",
-      "Advanced deal scores with AI predictions",
-      "Price history charts (365 days)",
-      "Cashback rewards activation",
-      "Voice search",
-      "All 12 languages",
-      "Ad-free experience",
-      "Priority customer support",
+      "pricing.premium.feature1",
+      "pricing.premium.feature2",
+      "pricing.premium.feature3",
+      "pricing.premium.feature4",
+      "pricing.premium.feature5",
+      "pricing.premium.feature6",
+      "pricing.premium.feature7",
+      "pricing.premium.feature8",
+      "pricing.premium.feature9",
     ],
   },
   {
     id: "pro",
-    name: "Pro",
+    nameKey: "pricing.pro.name",
     price: 19.99,
-    period: "month",
-    description: "For power users and small businesses",
+    periodKey: "pricing.pro.period",
+    descriptionKey: "pricing.pro.description",
     icon: <Shield className="w-5 h-5" />,
     features: [
-      "Everything in Premium",
-      "API access (1,000 calls/month)",
-      "Custom price dashboards",
-      "Export data to CSV/Excel",
-      "Bulk product tracking",
-      "Team collaboration (up to 5)",
-      "Custom alerts (SMS, WhatsApp)",
-      "White-label reports",
-      "Dedicated account manager",
+      "pricing.pro.feature1",
+      "pricing.pro.feature2",
+      "pricing.pro.feature3",
+      "pricing.pro.feature4",
+      "pricing.pro.feature5",
+      "pricing.pro.feature6",
+      "pricing.pro.feature7",
+      "pricing.pro.feature8",
+      "pricing.pro.feature9",
     ],
   },
   {
     id: "enterprise",
-    name: "Enterprise",
+    nameKey: "pricing.enterprise.name",
     price: 99.99,
-    period: "month",
-    description: "For large organizations with advanced needs",
+    periodKey: "pricing.enterprise.period",
+    descriptionKey: "pricing.enterprise.description",
     icon: <Crown className="w-5 h-5" />,
     features: [
-      "Everything in Pro",
-      "Unlimited API access",
-      "Custom integrations",
-      "Real-time data feeds",
-      "Advanced analytics",
-      "Dedicated infrastructure",
-      "Custom SLA",
-      "On-premise deployment option",
-      "Volume discounts",
+      "pricing.enterprise.feature1",
+      "pricing.enterprise.feature2",
+      "pricing.enterprise.feature3",
+      "pricing.enterprise.feature4",
+      "pricing.enterprise.feature5",
+      "pricing.enterprise.feature6",
+      "pricing.enterprise.feature7",
+      "pricing.enterprise.feature8",
+      "pricing.enterprise.feature9",
     ],
   },
 ];
 
 export function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const yearlyDiscount = 20;
 
   return (
@@ -99,16 +103,16 @@ export function PricingSection() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Choose Your <span className="text-[#FFD700]">PriceX</span> Plan
+            <span className="text-[#FFD700]">{t('app.name')}</span> {t('pricing.plan')}
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-8">
-            Unlock the full power of AI-powered price comparisons. Start saving today.
+            {t('home.pricing.subtitle')}
           </p>
           
           {/* Billing Toggle */}
           <div className="flex items-center justify-center gap-4 mb-8">
             <span className={`text-sm ${billingCycle === "monthly" ? "text-gray-900 dark:text-white font-semibold" : "text-gray-500"}`}>
-              Monthly
+              {t('pricing.monthly', 'Monthly')}
             </span>
             <button
               onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
@@ -121,11 +125,11 @@ export function PricingSection() {
               />
             </button>
             <span className={`text-sm ${billingCycle === "yearly" ? "text-gray-900 dark:text-white font-semibold" : "text-gray-500"}`}>
-              Yearly
+              {t('pricing.yearly', 'Yearly')}
             </span>
             {billingCycle === "yearly" && (
               <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                Save {yearlyDiscount}%
+                {t('pricing.save', 'Save')} {yearlyDiscount}%
               </span>
             )}
           </div>
@@ -145,31 +149,31 @@ export function PricingSection() {
               {plan.highlighted && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-black text-[#FFD700] px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
+                    {t('pricing.mostPopular', 'Most Popular')}
                   </span>
                 </div>
               )}
               
               <div className={`flex items-center gap-2 mb-4 ${plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"}`}>
                 {plan.icon}
-                <h3 className="text-xl font-bold">{plan.name}</h3>
+                <h3 className="text-xl font-bold">{t(plan.nameKey, plan.nameKey)}</h3>
               </div>
               
               <div className="mb-4">
                 <span className={`text-4xl font-bold ${plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  ${billingCycle === "yearly" && plan.price > 0 
-                    ? (plan.price * 12 * (1 - yearlyDiscount / 100) / 12).toFixed(2)
-                    : plan.price}
+                  {billingCycle === "yearly" && plan.price > 0 
+                    ? formatPrice(plan.price * 12 * (1 - yearlyDiscount / 100) / 12)
+                    : formatPrice(plan.price)}
                 </span>
                 {plan.price > 0 && (
                   <span className={`text-sm ${plan.highlighted ? "text-white/80" : "text-gray-500"}`}>
-                    /{billingCycle === "yearly" ? "month (billed annually)" : "month"}
+                    /{billingCycle === "yearly" ? t('pricing.billedAnnually', 'month (billed annually)') : t('pricing.perMonth', 'month')}
                   </span>
                 )}
               </div>
               
               <p className={`text-sm mb-6 ${plan.highlighted ? "text-white/80" : "text-gray-500"}`}>
-                {plan.description}
+                {t(plan.descriptionKey, plan.descriptionKey)}
               </p>
               
               <ul className="space-y-3 mb-6">
@@ -177,7 +181,7 @@ export function PricingSection() {
                   <li key={index} className="flex items-start gap-2">
                     <Check className={`w-5 h-5 flex-shrink-0 ${plan.highlighted ? "text-white" : "text-[#FFD700]"}`} />
                     <span className={`text-sm ${plan.highlighted ? "text-white/90" : "text-gray-600 dark:text-gray-300"}`}>
-                      {feature}
+                      {t(feature, feature)}
                     </span>
                   </li>
                 ))}
@@ -190,7 +194,7 @@ export function PricingSection() {
                     : "bg-[#FFD700] text-black hover:bg-yellow-400"
                 }`}
               >
-                {plan.price === 0 ? "Get Started" : "Subscribe Now"}
+                {plan.price === 0 ? t('pricing.getStarted', 'Get Started') : t('pricing.subscribe', 'Subscribe Now')}
               </button>
             </div>
           ))}
@@ -200,15 +204,15 @@ export function PricingSection() {
         <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-gray-500">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
-            <span>30-day money back guarantee</span>
+            <span>{t('pricing.moneyBack', '30-day money back guarantee')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5" />
-            <span>Cancel anytime</span>
+            <span>{t('pricing.cancel', 'Cancel anytime')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Crown className="w-5 h-5" />
-            <span>10M+ users trust PriceX</span>
+            <span>{t('pricing.usersTrust', '10M+ users trust PriceX')}</span>
           </div>
         </div>
       </div>

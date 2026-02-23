@@ -28,27 +28,27 @@ export function Footer() {
   const footerLinks = {
     company: [
       { label: t('footer.about'), href: '/about' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Press', href: '/press' },
-      { label: 'Blog', href: '/blog' },
+      { label: t('footer.careers'), href: '/careers' },
+      { label: t('footer.press'), href: '/press' },
+      { label: t('footer.blog'), href: '/blog' },
     ],
     support: [
       { label: t('footer.contact'), href: '/contact' },
-      { label: 'Help Center', href: '/help' },
-      { label: 'FAQs', href: '/faqs' },
-      { label: 'Feedback', href: '/feedback' },
+      { label: t('footer.help'), href: '/help' },
+      { label: t('footer.faqs'), href: '/faqs' },
+      { label: t('footer.feedback'), href: '/feedback' },
     ],
     legal: [
       { label: t('footer.privacy'), href: '/privacy' },
       { label: t('footer.terms'), href: '/terms' },
-      { label: 'Cookie Policy', href: '/cookies' },
-      { label: 'Accessibility', href: '/accessibility' },
+      { label: t('footer.cookies'), href: '/cookies' },
+      { label: t('footer.accessibility'), href: '/accessibility' },
     ],
     partners: [
-      { label: 'For Retailers', href: '/retailers' },
-      { label: 'For Brands', href: '/brands' },
-      { label: 'Advertise', href: '/advertise' },
-      { label: 'API Access', href: '/api' },
+      { label: t('footer.retailers'), href: '/retailers' },
+      { label: t('footer.brands'), href: '/brands' },
+      { label: t('footer.advertise'), href: '/advertise' },
+      { label: t('footer.apiAccess'), href: '/api' },
     ],
   };
 
@@ -71,7 +71,7 @@ export function Footer() {
               <PriceXLogoCompact />
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
-              Global AI-Powered Pricing Authority. Enterprise-grade price intelligence trusted by millions worldwide.
+              {t('app.description')}
             </p>
             
             {/* Contact Info */}
@@ -95,7 +95,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Company</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">{t('footer.company')}</h4>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
@@ -112,7 +112,7 @@ export function Footer() {
 
           {/* Support Links */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Support</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">{t('footer.support')}</h4>
             <ul className="space-y-2">
               {footerLinks.support.map((link) => (
                 <li key={link.href}>
@@ -129,7 +129,7 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">{t('footer.legal')}</h4>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.href}>
@@ -146,7 +146,7 @@ export function Footer() {
 
           {/* Partners Links */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">Partners</h4>
+            <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider">{t('footer.partners')}</h4>
             <ul className="space-y-2">
               {footerLinks.partners.map((link) => (
                 <li key={link.href}>
@@ -166,28 +166,28 @@ export function Footer() {
         <div className="py-8 border-t border-border">
           <div className={`flex flex-col md:flex-row items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div className={`text-center md:text-left ${isRTL ? 'md:text-right' : ''}`}>
-              <h4 className="font-semibold mb-1">Stay Updated</h4>
-              <p className="text-sm text-muted-foreground">Get the latest deals and price drops delivered to your inbox.</p>
+              <h4 className="font-semibold mb-1">{t('footer.stayUpdated')}</h4>
+              <p className="text-sm text-muted-foreground">{t('footer.newsletterText')}</p>
             </div>
             <div className={`flex gap-2 w-full md:w-auto ${isRTL ? 'flex-row-reverse' : ''}`}>
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('footer.email')}
                 className="flex-1 md:w-64 h-10 px-4 rounded-lg bg-background border border-border focus:border-[var(--pricex-yellow)] focus:ring-2 focus:ring-[var(--pricex-yellow)]/20 outline-none text-sm"
               />
               <button className="h-10 px-6 bg-[var(--pricex-yellow)] text-black font-semibold rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors whitespace-nowrap">
-                Subscribe
+                {t('footer.subscribe')}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* bottom Bar */}
         <div className="py-6 border-t border-border">
           <div className={`flex flex-col md:flex-row items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {/* Copyright */}
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © {new Date().getFullYear()} PriceX. All rights reserved.
+              {t('footer.copyright')}
             </p>
 
             {/* Social Links */}

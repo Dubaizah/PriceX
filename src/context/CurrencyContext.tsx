@@ -134,11 +134,14 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     
     if (!config) return `${amount}`;
 
+    // Convert from USD (source currency) to target currency
+    const convertedAmount = convertPrice(amount, 'USD');
+    
     // Determine decimal places based on currency
     const decimalPlaces = ['JPY', 'KRW', 'CNY'].includes(targetCurrency) ? 0 : 2;
     
     // Format number
-    const formatted = amount.toLocaleString(
+    const formatted = convertedAmount.toLocaleString(
       typeof navigator !== 'undefined' ? navigator.language : 'en-US',
       {
         minimumFractionDigits: decimalPlaces,
@@ -156,7 +159,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     } else {
       return `${formatted} ${config.symbol}`;
     }
-  }, [currentCurrency]);
+  }, [currentCurrency, convertPrice]);
 
   const value: CurrencyContextType = {
     currentCurrency,

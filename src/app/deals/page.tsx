@@ -22,25 +22,32 @@ import { useProduct } from '@/context/ProductContext';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function DealsPage() {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { search, searchResults, isSearching } = useProduct();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'discount' | 'price-asc' | 'price-desc' | 'rating'>('discount');
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   useEffect(() => {
-    search('deal', { inStock: true });
+    search('', { inStock: true });
   }, []);
 
   const timeFilters = [
-    { value: 'all', label: 'All Time' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
+    { value: 'all', label: t('deals.all', 'All Time') },
+    { value: 'today', label: t('common.today', 'Today') },
+    { value: 'week', label: t('common.thisWeek', 'This Week') },
+    { value: 'month', label: t('common.thisMonth', 'This Month') },
+  ];
+
+  const sortOptions = [
+    { value: 'discount', label: t('deals.biggestDiscount', 'Biggest Discount') },
+    { value: 'price-asc', label: t('deals.priceLowHigh', 'Price: Low to High') },
+    { value: 'price-desc', label: t('deals.priceHighLow', 'Price: High to Low') },
+    { value: 'rating', label: t('deals.highestRated', 'Highest Rated') },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-[120px] pb-20">
@@ -56,8 +63,8 @@ export default function DealsPage() {
                 <Tag className="w-6 h-6 text-[var(--pricex-yellow)]" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Hot Deals</h1>
-                <p className="text-muted-foreground">Up to 70% off on top products</p>
+                <h1 className="text-3xl font-bold">{t('deals.title', 'Hot Deals')}</h1>
+                <p className="text-muted-foreground">{t('deals.subtitle', 'Up to 70% off on top products')}</p>
               </div>
             </div>
           </motion.div>
@@ -66,7 +73,7 @@ export default function DealsPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8 pb-4 border-b border-border">
             <div className="flex items-center gap-2">
               <Filter className="w-5 h-5 text-muted-foreground" />
-              <span className="text-sm font-medium">Filters:</span>
+              <span className="text-sm font-medium">{t('search.filter', 'Filters')}:</span>
               <div className="flex gap-2">
                 {timeFilters.map((filter) => (
                   <button
@@ -88,26 +95,27 @@ export default function DealsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="h-10 px-3 rounded-lg bg-secondary border border-border text-sm focus:border-[var(--pricex-yellow)] outline-none"
+                className="h-10 px-3 rounded-lg bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none text-sm"
               >
-                <option value="discount">Biggest Discount</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
 
-              <div className="flex items-center border border-border rounded-lg overflow-hidden">
+              <div className="flex gap-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 ${viewMode === 'grid' ? 'bg-[var(--pricex-yellow)]' : 'bg-secondary'}`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-[var(--pricex-yellow)]' : 'bg-secondary'}`}
                 >
-                  <Grid3X3 className="w-5 h-5" />
+                  <Grid3X3 className={`w-5 h-5 ${viewMode === 'grid' ? 'text-black' : ''}`} />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 ${viewMode === 'list' ? 'bg-[var(--pricex-yellow)]' : 'bg-secondary'}`}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-[var(--pricex-yellow)]' : 'bg-secondary'}`}
                 >
-                  <List className="w-5 h-5" />
+                  <List className={`w-5 h-5 ${viewMode === 'list' ? 'text-black' : ''}`} />
                 </button>
               </div>
             </div>
@@ -118,57 +126,46 @@ export default function DealsPage() {
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--pricex-yellow)]" />
             </div>
-          ) : (searchResults as any) && (searchResults as any).length > 0 ? (
-            <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-              {(searchResults as any).map((product: any, index: number) => (
-                <motion.div
+          ) : (searchResults && searchResults.products && searchResults.products.length > 0) ? (
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'space-y-4'}>
+              {searchResults.products.slice(0, 20).map((product) => (
+                <ProductCard
                   key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <ProductCard product={product} variant={viewMode === 'list' ? 'horizontal' : 'default'} />
-                </motion.div>
+                  product={product}
+                  variant={viewMode === 'list' ? 'horizontal' : 'default'}
+                />
               ))}
             </div>
           ) : (
             <div className="text-center py-20">
-              <div className="w-20 h-20 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-                <Tag className="w-10 h-10 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No deals found</h3>
-              <p className="text-muted-foreground">Check back later for new deals</p>
+              <TrendingDown className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">{t('deals.noDeals', 'No deals found')}</h3>
+              <p className="text-muted-foreground">{t('deals.checkBack', 'Check back later for new deals')}</p>
             </div>
           )}
 
-          {/* Trust Badges */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                <TrendingDown className="w-6 h-6 text-green-500" />
+          {/* Features Section */}
+          <div className="mt-16 grid md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-card border border-border">
+              <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center mb-4">
+                <TrendingDown className="w-5 h-5 text-green-500" />
               </div>
-              <div>
-                <h4 className="font-semibold">Lowest Price Guarantee</h4>
-                <p className="text-sm text-muted-foreground">We match any lower price</p>
-              </div>
+              <h4 className="font-semibold mb-2">{t('deals.lowestGuarantee', 'Lowest Price Guarantee')}</h4>
+              <p className="text-sm text-muted-foreground">{t('deals.lowestGuaranteeDesc', 'We match any lower price')}</p>
             </div>
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-[var(--pricex-yellow)]/10 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-[var(--pricex-yellow)]" />
+            <div className="p-6 rounded-xl bg-card border border-border">
+              <div className="w-10 h-10 rounded-lg bg-[var(--pricex-yellow)]/10 flex items-center justify-center mb-4">
+                <Clock className="w-5 h-5 text-[var(--pricex-yellow)]" />
               </div>
-              <div>
-                <h4 className="font-semibold">Flash Deals</h4>
-                <p className="text-sm text-muted-foreground">Limited time offers</p>
-              </div>
+              <h4 className="font-semibold mb-2">{t('deals.flashDeals', 'Flash Deals')}</h4>
+              <p className="text-sm text-muted-foreground">{t('deals.flashDealsDesc', 'Limited time offers')}</p>
             </div>
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                <Tag className="w-6 h-6 text-blue-500" />
+            <div className="p-6 rounded-xl bg-card border border-border">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">
+                <Tag className="w-5 h-5 text-blue-500" />
               </div>
-              <div>
-                <h4 className="font-semibold">Price Drops</h4>
-                <p className="text-sm text-muted-foreground">Track price history</p>
-              </div>
+              <h4 className="font-semibold mb-2">{t('deals.priceDrops', 'Price Drops')}</h4>
+              <p className="text-sm text-muted-foreground">{t('deals.priceDropsDesc', 'Track price history')}</p>
             </div>
           </div>
         </div>

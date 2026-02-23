@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X, Bell, User, Heart } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PriceXLogoCompact } from '@/components/ui/PriceXLogo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { RegionSelector } from '@/components/region/RegionSelector';
@@ -18,8 +19,11 @@ import { useLanguage } from '@/context/LanguageContext';
 
 export function Header() {
   const { t, isRTL } = useLanguage();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +33,12 @@ export function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
 
   const navLinks = [
     { href: '/', label: t('nav.home') },
@@ -71,7 +81,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className={`flex items-center justify-between h-16 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {/* Logo */}
-            <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity">
+            <Link href="/" className="flex-shrink-0 hover:opacity-80 transition-opacity" style={{ flexDirection: 'row' }}>
               <PriceXLogoCompact />
             </Link>
 
@@ -81,10 +91,16 @@ export function Header() {
                 <input
                   type="text"
                   placeholder={t('search.placeholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                   className="w-full h-10 pl-10 pr-4 rounded-full bg-secondary border border-border focus:border-[var(--pricex-yellow)] focus:ring-2 focus:ring-[var(--pricex-yellow)]/20 transition-all outline-none text-sm"
                 />
                 <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground ${isRTL ? 'right-3.5' : 'left-3.5'}`} />
-                <button className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-4 bg-[var(--pricex-yellow)] text-black text-xs font-semibold rounded-full hover:bg-[var(--pricex-yellow-dark)] transition-colors">
+                <button 
+                  onClick={() => handleSearch(searchQuery)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-4 bg-[var(--pricex-yellow)] text-black text-xs font-semibold rounded-full hover:bg-[var(--pricex-yellow-dark)] transition-colors"
+                >
                   {t('search.button')}
                 </button>
               </div>
@@ -145,10 +161,16 @@ export function Header() {
                 <input
                   type="text"
                   placeholder={t('search.placeholder')}
+                  value={mobileSearchQuery}
+                  onChange={(e) => setMobileSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(mobileSearchQuery)}
                   className="w-full h-12 pl-10 pr-20 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                 />
                 <Search className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-3.5' : 'left-3.5'}`} />
-                <button className={`absolute right-1.5 top-1/2 -translate-y-1/2 h-9 px-4 bg-[var(--pricex-yellow)] text-black text-sm font-semibold rounded-lg`}>
+                <button 
+                  onClick={() => handleSearch(mobileSearchQuery)}
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 h-9 px-4 bg-[var(--pricex-yellow)] text-black text-sm font-semibold rounded-lg`}
+                >
                   {t('search.button')}
                 </button>
               </div>
@@ -170,7 +192,7 @@ export function Header() {
               {/* Mobile Theme Toggle */}
               <div className="pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Theme</span>
+                  <span className="text-sm text-muted-foreground">{t('common.theme')}</span>
                   <ThemeToggle />
                 </div>
               </div>

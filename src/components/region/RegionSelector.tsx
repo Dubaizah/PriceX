@@ -91,7 +91,7 @@ export function RegionSelector() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden"
+              className="absolute left-0 top-full mt-2 w-80 sm:w-96 max-h-[70vh] bg-card border border-border rounded-xl shadow-2xl z-50 overflow-y-auto"
               role="listbox"
               aria-label={t('region.select')}
             >
@@ -126,7 +126,7 @@ export function RegionSelector() {
 
               {/* Countries List */}
               {activeRegion && (
-                <div className="p-4 max-h-60 overflow-y-auto">
+                <div className="p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(70vh - 200px)' }}>
                   <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider font-medium">
                     {t('country.select')}
                   </p>

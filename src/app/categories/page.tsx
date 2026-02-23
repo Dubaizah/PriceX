@@ -7,197 +7,44 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { 
-  Laptop, 
-  Shirt, 
-  Home, 
-  Dumbbell, 
-  Car, 
-  Coffee,
-  Baby,
-  Dog,
-  Book,
-  Plane,
-  Gem,
-  Sofa,
-  Code,
-  Music,
-  Hammer,
-  Palette,
-  Heart,
-  Leaf,
-  ShoppingBag,
-} from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { PriceXLogo } from '@/components/ui/PriceXLogo';
-
-const categories = [
-  { 
-    id: 'electronics', 
-    name: 'Electronics', 
-    icon: Laptop, 
-    count: '2.5M+ products',
-    description: 'Phones, laptops, tablets, and more',
-    color: 'bg-blue-500',
-  },
-  { 
-    id: 'fashion', 
-    name: 'Fashion', 
-    icon: Shirt, 
-    count: '5M+ products',
-    description: 'Clothing, shoes, and accessories',
-    color: 'bg-pink-500',
-  },
-  { 
-    id: 'home', 
-    name: 'Home & Garden', 
-    icon: Home, 
-    count: '1.8M+ products',
-    description: 'Furniture, decor, and outdoor',
-    color: 'bg-amber-500',
-  },
-  { 
-    id: 'sports', 
-    name: 'Sports', 
-    icon: Dumbbell, 
-    count: '900K+ products',
-    description: 'Fitness, outdoor sports, and gear',
-    color: 'bg-green-500',
-  },
-  { 
-    id: 'beauty', 
-    name: 'Beauty', 
-    icon: Heart, 
-    count: '1.2M+ products',
-    description: 'Skincare, makeup, and haircare',
-    color: 'bg-rose-500',
-  },
-  { 
-    id: 'automotive', 
-    name: 'Automotive', 
-    icon: Car, 
-    count: '600K+ products',
-    description: 'Car parts, accessories, and tools',
-    color: 'bg-gray-500',
-  },
-  { 
-    id: 'groceries', 
-    name: 'Groceries', 
-    icon: Coffee, 
-    count: '500K+ products',
-    description: 'Food, beverages, and household',
-    color: 'bg-orange-500',
-  },
-  { 
-    id: 'kids', 
-    name: 'Kids & Toys', 
-    icon: Baby, 
-    count: '800K+ products',
-    description: 'Toys, games, and baby supplies',
-    color: 'bg-purple-500',
-  },
-  { 
-    id: 'pets', 
-    name: 'Pets', 
-    icon: Dog, 
-    count: '400K+ products',
-    description: 'Pet food, supplies, and toys',
-    color: 'bg-amber-600',
-  },
-  { 
-    id: 'office', 
-    name: 'Office', 
-    icon: Book, 
-    count: '350K+ products',
-    description: 'Supplies, furniture, and electronics',
-    color: 'bg-indigo-500',
-  },
-  { 
-    id: 'travel', 
-    name: 'Travel', 
-    icon: Plane, 
-    count: '200K+ products',
-    description: 'Luggage, travel accessories',
-    color: 'bg-cyan-500',
-  },
-  { 
-    id: 'luxury', 
-    name: 'Luxury', 
-    icon: Gem, 
-    count: '150K+ products',
-    description: 'Watches, jewelry, and designer',
-    color: 'bg-yellow-500',
-  },
-  { 
-    id: 'furniture', 
-    name: 'Furniture', 
-    icon: Sofa, 
-    count: '700K+ products',
-    description: 'Indoor and outdoor furniture',
-    color: 'bg-brown-500',
-  },
-  { 
-    id: 'software', 
-    name: 'Software', 
-    icon: Code, 
-    count: '100K+ products',
-    description: 'Software licenses and subscriptions',
-    color: 'bg-slate-500',
-  },
-  { 
-    id: 'music', 
-    name: 'Musical Instruments', 
-    icon: Music, 
-    count: '250K+ products',
-    description: 'Instruments and audio equipment',
-    color: 'bg-red-500',
-  },
-  { 
-    id: 'industrial', 
-    name: 'Industrial', 
-    icon: Hammer, 
-    count: '500K+ products',
-    description: 'Tools, machinery, and supplies',
-    color: 'bg-zinc-500',
-  },
-  { 
-    id: 'art', 
-    name: 'Art & Collectibles', 
-    icon: Palette, 
-    count: '300K+ products',
-    description: 'Art, antiques, and collectibles',
-    color: 'bg-fuchsia-500',
-  },
-  { 
-    id: 'health', 
-    name: 'Health & Fitness', 
-    icon: Dumbbell, 
-    count: '600K+ products',
-    description: 'Supplements and fitness gear',
-    color: 'bg-emerald-500',
-  },
-  { 
-    id: 'eco', 
-    name: 'Green & Eco', 
-    icon: Leaf, 
-    count: '200K+ products',
-    description: 'Sustainable and eco-friendly products',
-    color: 'bg-green-600',
-  },
-  { 
-    id: 'digital', 
-    name: 'Digital Goods', 
-    icon: ShoppingBag, 
-    count: '150K+ products',
-    description: 'Gift cards, e-books, and digital services',
-    color: 'bg-violet-500',
-  },
-];
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function CategoriesPage() {
+  const { t, isRTL } = useLanguage();
+
+  const categories = [
+    { id: 'electronics', nameKey: 'categories.electronics', icon: '💻', count: '2.5M+', color: 'bg-blue-500', image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop&q=80' },
+    { id: 'home-appliances', nameKey: 'categories.homeAppliances', icon: '🏠', count: '1.8M+', color: 'bg-amber-500', image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop&q=80' },
+    { id: 'fashion', nameKey: 'categories.fashion', icon: '👕', count: '5M+', color: 'bg-pink-500', image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=400&fit=crop&q=80' },
+    { id: 'beauty', nameKey: 'categories.beauty', icon: '💄', count: '1.2M+', color: 'bg-rose-500', image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=400&fit=crop&q=80' },
+    { id: 'groceries', nameKey: 'categories.groceries', icon: '🛒', count: '900K+', color: 'bg-green-500', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=400&fit=crop&q=80' },
+    { id: 'automotive', nameKey: 'categories.automotive', icon: '🚗', count: '600K+', color: 'bg-gray-500', image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&h=400&fit=crop&q=80' },
+    { id: 'health', nameKey: 'categories.health', icon: '💪', count: '800K+', color: 'bg-red-500', image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=400&fit=crop&q=80' },
+    { id: 'baby', nameKey: 'categories.baby', icon: '👶', count: '700K+', color: 'bg-yellow-500', image: 'https://images.unsplash.com/photo-1587653915936-5623ea0b949a?w=600&h=400&fit=crop&q=80' },
+    { id: 'office', nameKey: 'categories.office', icon: '📎', count: '500K+', color: 'bg-purple-500', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop&q=80' },
+    { id: 'sports', nameKey: 'categories.sports', icon: '⚽', count: '900K+', color: 'bg-green-600', image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=400&fit=crop&q=80' },
+    { id: 'books', nameKey: 'categories.books', icon: '📚', count: '1M+', color: 'bg-orange-500', image: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=600&h=400&fit=crop&q=80' },
+    { id: 'pets', nameKey: 'categories.pets', icon: '🐕', count: '400K+', color: 'bg-amber-600', image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=400&fit=crop&q=80' },
+    { id: 'garden', nameKey: 'categories.garden', icon: '🌿', count: '350K+', color: 'bg-green-500', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop&q=80' },
+    { id: 'travel', nameKey: 'categories.travel', icon: '✈️', count: '300K+', color: 'bg-sky-500', image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=600&h=400&fit=crop&q=80' },
+    { id: 'luxury', nameKey: 'categories.luxury', icon: '💎', count: '250K+', color: 'bg-yellow-500', image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=400&fit=crop&q=80' },
+    { id: 'software', nameKey: 'categories.software', icon: '💻', count: '200K+', color: 'bg-indigo-500', image: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&h=400&fit=crop&q=80' },
+    { id: 'furniture', nameKey: 'categories.furniture', icon: '🛋️', count: '450K+', color: 'bg-amber-700', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop&q=80' },
+    { id: 'pharmacy', nameKey: 'categories.pharmacy', icon: '💊', count: '300K+', color: 'bg-teal-500', image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=400&fit=crop&q=80' },
+    { id: 'new-arrivals', nameKey: 'categories.newArrivals', icon: '🆕', count: '100K+', color: 'bg-purple-500', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&q=80' },
+    { id: 'art', nameKey: 'categories.art', icon: '🎨', count: '150K+', color: 'bg-pink-400', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&h=400&fit=crop&q=80' },
+    { id: 'music', nameKey: 'categories.music', icon: '🎸', count: '200K+', color: 'bg-red-600', image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600&h=400&fit=crop&q=80' },
+    { id: 'industrial', nameKey: 'categories.industrial', icon: '🏭', count: '180K+', color: 'bg-gray-600', image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop&q=80' },
+    { id: 'smart-home', nameKey: 'categories.smartHome', icon: '🏠', count: '120K+', color: 'bg-cyan-500', image: 'https://images.unsplash.com/photo-1558002038-1055907df827?w=600&h=400&fit=crop&q=80' },
+    { id: 'digital', nameKey: 'categories.digital', icon: '📱', count: '90K+', color: 'bg-blue-600', image: 'https://images.unsplash.com/photo-1535016120720-40c646be5580?w=600&h=400&fit=crop&q=80' },
+    { id: 'finance', nameKey: 'categories.finance', icon: '💰', count: '80K+', color: 'bg-green-700', image: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&h=400&fit=crop&q=80' },
+    { id: 'eco', nameKey: 'categories.eco', icon: '🌱', count: '70K+', color: 'bg-emerald-500', image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&h=400&fit=crop&q=80' },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Header />
       
       <main className="pt-[120px] pb-20">
@@ -206,62 +53,48 @@ export default function CategoriesPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="mb-12"
           >
-            <h1 className="text-4xl font-bold mb-4">Browse Categories</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Explore millions of products across 25+ categories. 
-              Compare prices and find the best deals.
+            <h1 className="text-4xl font-bold mb-4">{t('categories.title', 'Browse Categories')}</h1>
+            <p className="text-muted-foreground text-lg">
+              {t('categories.subtitle', 'Browse by category')}
             </p>
           </motion.div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {categories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={category.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                >
-                  <Link
-                    href={`/search?category=${category.id}`}
-                    className="block p-6 rounded-2xl bg-card border border-border hover:border-[var(--pricex-yellow)] hover:shadow-lg transition-all group"
-                  >
-                    <div className={`w-14 h-14 rounded-xl ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-7 h-7 text-white" />
-                    </div>
-                    <h3 className="font-semibold mb-1 group-hover:text-[var(--pricex-yellow)] transition-colors">
-                      {category.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{category.count}</p>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Category Stats */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { value: '25+', label: 'Categories' },
-              { value: '50M+', label: 'Products' },
-              { value: '10K+', label: 'Retailers' },
-              { value: '150+', label: 'Countries' },
-            ].map((stat, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="text-center p-6 rounded-2xl bg-card border border-border"
+                key={category.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <div className="text-3xl font-bold text-[var(--pricex-yellow)] mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-muted-foreground">{stat.label}</div>
+                <Link
+                  href={`/search?category=${category.id}`}
+                  className="block rounded-2xl bg-card border border-border hover:border-[var(--pricex-yellow)] hover:shadow-xl hover:shadow-[var(--pricex-yellow)]/10 transition-all duration-300 group overflow-hidden"
+                >
+                  <div className="relative h-48 overflow-hidden bg-muted">
+                    <img 
+                      src={category.image} 
+                      alt={t(category.nameKey)}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.classList.add('flex', 'items-center', 'justify-center');
+                        e.currentTarget.parentElement!.innerHTML = `<span class="text-4xl">${category.icon}</span>`;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute top-3 right-3 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl">
+                      {category.icon}
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 className="font-bold text-lg text-white mb-1 group-hover:text-[var(--pricex-yellow)] transition-colors">{t(category.nameKey)}</h3>
+                      <p className="text-sm text-white/70">{category.count} {t('categories.products', 'products')}</p>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             ))}
           </div>

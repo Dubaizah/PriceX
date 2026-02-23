@@ -6,7 +6,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
@@ -23,6 +22,7 @@ import {
 import { Product } from '@/types/product-data';
 import { useProduct } from '@/context/ProductContext';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ProductCardProps {
   product: Product;
@@ -42,10 +42,11 @@ export function ProductCard({
     createBackInStockAlert,
   } = useProduct();
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  const bestPrice = product.pricePoints.sort((a, b) => a.price - b.price)[0];
+  const bestPrice = product.pricePoints ? [...product.pricePoints].sort((a, b) => a.price - b.price)[0] : null;
   const isCompared = isInComparison(product.id);
   const isOutOfStock = product.availability === 'out_of_stock';
   
@@ -66,17 +67,16 @@ export function ProductCard({
       <div className="flex gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-lg transition-shadow">
         {/* Image */}
         <div className="relative w-32 h-32 flex-shrink-0">
-          {!imageError && product.images[0] ? (
-            <Image
+          {!imageError && product.images && product.images[0] ? (
+            <img
               src={product.images[0].url}
               alt={product.name}
-              fill
-              className="object-contain rounded-lg"
+              className="object-contain rounded-lg w-full h-full"
               onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-              <span className="text-muted-foreground text-xs">No image</span>
+              <span className="text-muted-foreground text-xs">{t('product.noImage', 'No image')}</span>
             </div>
           )}
         </div>
@@ -120,9 +120,9 @@ export function ProductCard({
           {/* Price & CTA */}
           <div className="flex items-center justify-between mt-3">
             <div>
-              <p className="text-2xl font-bold">${bestPrice?.price.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{formatPrice(bestPrice?.price || 0)}</p>
               <p className="text-xs text-muted-foreground">
-                from {bestPrice?.retailer.name}
+                {t('product.from', 'from')} {bestPrice?.retailer.name}
               </p>
             </div>
             
@@ -132,7 +132,7 @@ export function ProductCard({
                 className="flex items-center gap-2 px-4 py-2 text-sm border border-border rounded-lg hover:border-[var(--pricex-yellow)] transition-colors"
               >
                 <Bell className="w-4 h-4" />
-                Alert me
+                {t('product.alertMe', 'Alert me')}
               </button>
             ) : (
               <a
@@ -142,7 +142,7 @@ export function ProductCard({
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--pricex-yellow)] text-black font-medium rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
-                View Deal
+                {t('product.viewDeal', 'View Deal')}
               </a>
             )}
           </div>
@@ -162,37 +162,36 @@ export function ProductCard({
     >
       {/* Image Container */}
       <div className="relative aspect-square bg-muted overflow-hidden">
-        {!imageError && product.images[0] ? (
-          <Image
+        {!imageError && product.images && product.images[0] ? (
+          <img
             src={product.images[0].url}
             alt={product.name}
-            fill
-            className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+            className="object-contain p-4 w-full h-full group-hover:scale-105 transition-transform duration-500"
             onError={() => setImageError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-muted-foreground">No image available</span>
+            <span className="text-muted-foreground">{t('product.noImageAvailable', 'No image available')}</span>
           </div>
         )}
         
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {isOutOfStock && (
-            <span className="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">
-              Out of Stock
-            </span>
-          )}
-          {bestPrice?.originalPrice && bestPrice.price < bestPrice.originalPrice && (
+            {isOutOfStock && (
+              <span className="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded">
+                {t('product.outOfStock', 'Out of Stock')}
+              </span>
+            )}
+          {bestPrice && bestPrice.originalPrice && bestPrice.price < bestPrice.originalPrice && (
             <span className="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded">
               -{Math.round(((bestPrice.originalPrice - bestPrice.price) / bestPrice.originalPrice) * 100)}%
             </span>
           )}
-          {bestPrice?.retailer.isOfficialStore && (
-            <span className="px-2 py-1 bg-[var(--pricex-yellow)] text-black text-xs font-medium rounded">
-              Official
-            </span>
-          )}
+            {bestPrice?.retailer?.isOfficialStore && (
+              <span className="px-2 py-1 bg-[var(--pricex-yellow)] text-black text-xs font-medium rounded">
+                {t('product.official', 'Official')}
+              </span>
+            )}
         </div>
         
         {/* Actions */}
@@ -233,7 +232,7 @@ export function ProductCard({
         </Link>
         
         {/* SKU */}
-        <p className="text-xs text-muted-foreground mb-3">SKU: {product.sku}</p>
+        <p className="text-xs text-muted-foreground mb-3">{t('product.sku', 'SKU')}: {product.sku}</p>
         
         {/* Features */}
         {product.features.length > 0 && (
@@ -249,18 +248,18 @@ export function ProductCard({
         {/* Price */}
         <div className="mb-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold">${bestPrice?.price.toFixed(2)}</span>
+            <span className="text-2xl font-bold">{formatPrice(bestPrice?.price || 0)}</span>
             {bestPrice?.originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
-                ${bestPrice.originalPrice.toFixed(2)}
+                {formatPrice(bestPrice.originalPrice)}
               </span>
             )}
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span>from</span>
+            <span>{t('product.from', 'from')}</span>
             <span className="font-medium">{bestPrice?.retailer.name}</span>
             {bestPrice?.shippingCost === 0 && (
-              <span className="text-green-500">+ Free shipping</span>
+              <span className="text-green-500">+ {t('product.freeShipping', 'Free shipping')}</span>
             )}
           </div>
         </div>
@@ -268,12 +267,12 @@ export function ProductCard({
         {/* Retailer Info */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
           <Check className="w-3 h-3 text-green-500" />
-          <span>{bestPrice?.retailer.rating}★ retailer</span>
+          <span>{bestPrice?.retailer.rating}★ {t('product.retailer', 'retailer')}</span>
           {bestPrice?.retailer.locations && bestPrice.retailer.locations.length > 0 && (
             <>
               <span>•</span>
               <MapPin className="w-3 h-3" />
-              <span>{bestPrice.retailer.locations.length} locations</span>
+              <span>{bestPrice.retailer.locations.length} {t('product.locations', 'locations')}</span>
             </>
           )}
         </div>
@@ -285,18 +284,18 @@ export function ProductCard({
             className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-border rounded-lg font-medium hover:border-[var(--pricex-yellow)] transition-colors"
           >
             <Bell className="w-4 h-4" />
-            Back in Stock Alert
+            {t('product.backInStockAlert', 'Back in Stock Alert')}
           </button>
         ) : (
-          <a
-            href={bestPrice?.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-2.5 bg-[var(--pricex-yellow)] text-black font-semibold rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            View Deal
-          </a>
+              <a
+                href={bestPrice?.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--pricex-yellow)] text-black font-medium rounded-lg hover:bg-[var(--pricex-yellow-dark)] transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+                {t('product.viewDeal', 'View Deal')}
+              </a>
         )}
       </div>
     </motion.div>

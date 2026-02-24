@@ -229,8 +229,31 @@ const productImages: Record<string, string> = {
   'default': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
 };
 
-// Simple image helper - returns default image
+// Product-specific image helper
 const getImgAlt = (productName: string, productBrand: string): string => {
+  const n = productName.toLowerCase();
+  const b = productBrand.toLowerCase();
+  
+  if (n.includes('iphone') || b === 'apple') return 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400';
+  if (n.includes('galaxy') || n.includes('samsung')) return 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400';
+  if (n.includes('pixel') || b === 'google') return 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400';
+  if (n.includes('macbook')) return 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400';
+  if (n.includes('xps') || b === 'dell') return 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400';
+  if (n.includes('ipad') || n.includes('tablet')) return 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400';
+  if (n.includes('watch')) return 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400';
+  if (n.includes('airpod') || n.includes('headphone')) return 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400';
+  if (n.includes('camera') || n.includes('sony') || n.includes('canon') || n.includes('nikon')) return 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400';
+  if (n.includes('drone') || n.includes('dji')) return 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400';
+  if (n.includes('playstation') || n.includes('ps5') || n.includes('xbox') || n.includes('nintendo')) return 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400';
+  if (n.includes('tv') || n.includes('oled')) return 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400';
+  if (n.includes('dyson') || n.includes('vacuum')) return 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=400';
+  if (n.includes('nike') || n.includes('air max') || n.includes('jordan') || n.includes('dunk')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400';
+  if (n.includes('adidas') || n.includes('ultraboost') || n.includes('samba')) return 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400';
+  if (n.includes('rolex') || n.includes('watch')) return 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400';
+  if (n.includes('bag') || n.includes('backpack') || n.includes('vuitton')) return 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400';
+  if (n.includes('laptop') || n.includes('pro') || n.includes('surface')) return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400';
+  if (n.includes('earbud') || n.includes('buds')) return 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400';
+  
   return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400';
 };
 

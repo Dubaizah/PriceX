@@ -1,5 +1,6 @@
 /**
- * PriceX - Email Service using SendGrid
+ * PriceX - Email Service using Resend
+ * No domain verification needed!
  */
 
 interface EmailResponse {
@@ -8,21 +9,27 @@ interface EmailResponse {
   error?: string;
 }
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-const EMAIL_FROM = process.env.EMAIL_FROM;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 export async function sendOTPEmail(to: string, code: string, purpose: string = 'verification'): Promise<EmailResponse> {
   const subject = purpose === 'login' ? 'PriceX - Your Login Verification Code' : 'PriceX - Your Verification Code';
   
-  if (!EMAIL_FROM) {
-    return { success: false, error: 'Sender email not configured' };
-  }
-  
-  if (!SENDGRID_API_KEY) {
+  if (!RESEND_API_KEY) {
     return { success: false, error: 'Email service not configured' };
   }
 
-  const emailHtml = `
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'PriceX <onboarding@resend.dev>',
+        to: [to],
+        subject: subject,
+        html: `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -39,28 +46,16 @@ export async function sendOTPEmail(to: string, code: string, purpose: string = '
     <p style="color: #999; font-size: 14px; text-align: center;">This code expires in 10 minutes.</p>
   </div>
 </body>
-</html>`;
-
-  try {
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: EMAIL_FROM, name: 'PriceX' },
-        subject: subject,
-        content: [{ type: 'text/html', value: emailHtml }],
+</html>`,
       }),
     });
 
-    if (response.ok || response.status === 202) {
-      return { success: true, messageId: 'sent' };
+    if (response.ok) {
+      const data = await response.json();
+      return { success: true, messageId: data.id };
     } else {
       const error = await response.text();
-      return { success: false, error: `SendGrid error: ${response.status}` };
+      return { success: false, error: error };
     }
   } catch (err) {
     return { success: false, error: 'Failed to send email' };

@@ -229,8 +229,13 @@ const productImages: Record<string, string> = {
   'default': 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
 };
 
-// Product-specific image helper
+// Product-specific image helper - uses alt text as fallback
 const getImgAlt = (productName: string, productBrand: string): string => {
+  // If placeholder values, use default
+  if (productName === 'Product' && productBrand === 'Brand') {
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400';
+  }
+  
   const n = productName.toLowerCase();
   const b = productBrand.toLowerCase();
   
@@ -249,10 +254,12 @@ const getImgAlt = (productName: string, productBrand: string): string => {
   if (n.includes('dyson') || n.includes('vacuum')) return 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=400';
   if (n.includes('nike') || n.includes('air max') || n.includes('jordan') || n.includes('dunk')) return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400';
   if (n.includes('adidas') || n.includes('ultraboost') || n.includes('samba')) return 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400';
-  if (n.includes('rolex') || n.includes('watch')) return 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400';
+  if (n.includes('rolex') || n.includes('omega') || n.includes('cartier')) return 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400';
   if (n.includes('bag') || n.includes('backpack') || n.includes('vuitton')) return 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400';
   if (n.includes('laptop') || n.includes('pro') || n.includes('surface')) return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400';
   if (n.includes('earbud') || n.includes('buds')) return 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400';
+  if (n.includes('fitbit') || n.includes('garmin')) return 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400';
+  if (n.includes('bose') || n.includes('jbl') || n.includes('sony')) return 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400';
   
   return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400';
 };
@@ -335,8 +342,8 @@ export const SEED_PRODUCTS: SeedProduct[] = [
 
   // ELECTRONICS - Laptops
   {
-    id: '4', name: 'MacBook Pro 16" M3 Max', description: 'Powerful laptop with M3 Max chip, Liquid Retina XDR display, up to 22 hours battery.', brand: 'Apple', model: 'MacBook Pro 16" M3', sku: 'MRW23LL/A', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'MacBook Pro 16" M3 Max', type: 'main', order: 1 }],
+    id: '4', name: 'MacBook Pro 16" M3 Max', description: 'Powerful laptop with M3 Max chip', brand: 'Apple', model: 'MacBook Pro 16" M3', sku: 'MRW23LL/A', categoryId: 'electronics',
+    images: [{ id: '1', url: getImgAlt('MacBook Pro 16" M3 Max', 'Apple'), thumbnail: getImgAlt('MacBook Pro 16" M3 Max', 'Apple'), alt: 'MacBook Pro 16" M3 Max', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '16.2" Liquid Retina XDR', group: 'Display' },
       { attributeId: 'chip', name: 'Chip', value: 'M3 Max', group: 'Performance' },
@@ -350,7 +357,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '5', name: 'Dell XPS 15 OLED', description: 'Premium Windows laptop with 15.6" OLED display, Intel Core i9, and sleek design.', brand: 'Dell', model: 'XPS 15 9530', sku: 'XPS159530', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Dell XPS 15 OLED', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Dell XPS 15 OLED', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '15.6" 3.5K OLED', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'Intel Core i9-13900H', group: 'Performance' },
@@ -363,7 +370,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '6', name: 'Lenovo ThinkPad X1 Carbon Gen 12', description: 'Business ultrabook with Intel Core Ultra processor, weighing only 1.09kg.', brand: 'Lenovo', model: 'ThinkPad X1 Carbon Gen 12', sku: '21H5001HUS', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Lenovo ThinkPad X1 Carbon', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Lenovo ThinkPad X1 Carbon', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '14" 2.8K OLED', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'Intel Core Ultra 7', group: 'Performance' },
@@ -377,7 +384,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - Tablets
   {
     id: '7', name: 'iPad Pro 12.9" M4', description: 'The most powerful iPad ever with M4 chip and stunning Liquid Retina XDR display.', brand: 'Apple', model: 'iPad Pro 12.9" M4', sku: 'MX2D3LL/A', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'iPad Pro 12.9" M4', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'iPad Pro 12.9" M4', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '12.9" Liquid Retina XDR', group: 'Display' },
       { attributeId: 'chip', name: 'Chip', value: 'M4', group: 'Performance' },
@@ -389,7 +396,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '8', name: 'Samsung Galaxy Tab S9 Ultra', description: 'Premium Android tablet with 14.6" display, S Pen included, and DeX mode.', brand: 'Samsung', model: 'Galaxy Tab S9 Ultra', sku: 'SM-X910', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Samsung Galaxy Tab S9 Ultra', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Samsung Galaxy Tab S9 Ultra', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '14.6" Dynamic AMOLED', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'Snapdragon 8 Gen 2', group: 'Performance' },
@@ -403,7 +410,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - Wearables
   {
     id: '9', name: 'Apple Watch Ultra 2', description: 'The most rugged and capable Apple Watch with precision GPS and 36-hour battery.', brand: 'Apple', model: 'Watch Ultra 2', sku: 'MRF93LL/A', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Apple Watch Ultra 2', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Apple Watch Ultra 2', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '49mm Titanium', group: 'Design' },
       { attributeId: 'battery', name: 'Battery', value: '36 hours', group: 'Battery' },
@@ -415,7 +422,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '10', name: 'Samsung Galaxy Watch 6 Classic', description: 'Premium smartwatch with rotating bezel, Super AMOLED display, and health tracking.', brand: 'Samsung', model: 'Galaxy Watch 6 Classic', sku: 'SM-R950', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Samsung Galaxy Watch 6', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Samsung Galaxy Watch 6', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '47mm Super AMOLED', group: 'Display' },
       { attributeId: 'battery', name: 'Battery', value: '40 hours', group: 'Battery' },
@@ -429,7 +436,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - Audio
   {
     id: '11', name: 'Sony WH-1000XM5', description: 'Industry-leading noise canceling headphones with exceptional sound quality and 30-hour battery.', brand: 'Sony', model: 'WH-1000XM5', sku: 'WH1000XM5', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Sony WH-1000XM5', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Sony WH-1000XM5', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'driver', name: 'Driver', value: '30mm', group: 'Audio' },
       { attributeId: 'battery', name: 'Battery', value: '30 hours', group: 'Battery' },
@@ -441,7 +448,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '12', name: 'AirPods Pro 2nd Generation', description: 'Active Noise Cancellation, Adaptive Transparency, and personalized Spatial Audio.', brand: 'Apple', model: 'AirPods Pro 2', sku: 'MQD83AM/A', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'AirPods Pro 2', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'AirPods Pro 2', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'chip', name: 'Chip', value: 'Apple H2', group: 'Performance' },
       { attributeId: 'battery', name: 'Battery', value: '6 hours + 30 hours case', group: 'Battery' },
@@ -455,7 +462,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - Cameras
   {
     id: '13', name: 'Sony Alpha A7 IV', description: 'Full-frame mirrorless camera with 33MP sensor, 4K 60p video, and advanced autofocus.', brand: 'Sony', model: 'A7 IV', sku: 'ILCE-7M4', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Sony Alpha A7 IV', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Sony Alpha A7 IV', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'sensor', name: 'Sensor', value: '33MP Full-Frame', group: 'Image' },
       { attributeId: 'video', name: 'Video', value: '4K 60p', group: 'Video' },
@@ -467,7 +474,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '14', name: 'Canon EOS R6 Mark II', description: 'Professional full-frame mirrorless with 24.2MP, 40fps burst, and advanced IBIS.', brand: 'Canon', model: 'EOS R6 Mark II', sku: '5667C002', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Canon EOS R6 Mark II', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Canon EOS R6 Mark II', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'sensor', name: 'Sensor', value: '24.2MP Full-Frame', group: 'Image' },
       { attributeId: 'burst', name: 'Burst', value: '40fps', group: 'Performance' },
@@ -481,7 +488,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - TVs
   {
     id: '15', name: 'Samsung 65" OLED 4K Smart TV S95C', description: 'Premium OLED TV with Neural Quantum Processor, Dolby Atmos, and Smart Hub.', brand: 'Samsung', model: 'QN65S95C', sku: 'QN65S95CAF', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Samsung OLED TV', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Samsung OLED TV', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'size', name: 'Screen Size', value: '65"', group: 'Display' },
       { attributeId: 'resolution', name: 'Resolution', value: '4K UHD', group: 'Display' },
@@ -494,7 +501,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '16', name: 'LG 55" C3 OLED evo', description: 'Self-lit OLED pixels, α9 AI Processor 4K, and gaming optimization.', brand: 'LG', model: 'OLED55C3PUA', sku: 'OLED55C3PUA', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'LG C3 OLED', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'LG C3 OLED', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'size', name: 'Screen Size', value: '55"', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'α9 AI Processor 4K', group: 'Performance' },
@@ -508,7 +515,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // ELECTRONICS - Gaming
   {
     id: '17', name: 'Sony PlayStation 5 Slim', description: 'Next-gen gaming console with 1TB SSD, 4K gaming, and DualSense controller.', brand: 'Sony', model: 'PS5 Slim', sku: 'CFI-7000', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'PlayStation 5', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'PlayStation 5', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'storage', name: 'Storage', value: '1TB SSD', group: 'Storage' },
       { attributeId: 'resolution', name: 'Resolution', value: 'Up to 4K 120Hz', group: 'Performance' },
@@ -520,7 +527,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '18', name: 'Xbox Series X', description: 'Most powerful Xbox ever with 12 teraflops, Quick Resume, and 4K gaming.', brand: 'Microsoft', model: 'Series X', sku: 'RRT-00001', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Xbox Series X', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Xbox Series X', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'storage', name: 'Storage', value: '1TB NVMe SSD', group: 'Storage' },
       { attributeId: 'resolution', name: 'Resolution', value: 'Up to 4K 120fps', group: 'Performance' },
@@ -532,7 +539,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '19', name: 'DJI Mini 4 Pro', description: 'Lightweight drone with 4K/60fps HDR video, 48MP photos, and 34-min flight time.', brand: 'DJI', model: 'Mini 4 Pro', sku: 'DJI-MINI4PRO', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'DJI Mini 4 Pro', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'DJI Mini 4 Pro', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'camera', name: 'Camera', value: '48MP 1/1.3"', group: 'Camera' },
       { attributeId: 'video', name: 'Video', value: '4K 60fps HDR', group: 'Video' },
@@ -547,7 +554,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // FASHION - Shoes
   {
     id: '20', name: 'Nike Air Max 90', description: 'Classic running-inspired sneaker with visible Air cushioning and premium leather.', brand: 'Nike', model: 'Air Max 90', sku: 'DW3381-001', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Nike Air Max 90', type: 'main', order: 1 }],
+    images: [{ id: '1', url: getImgAlt('Nike Air Max 90', 'Nike'), thumbnail: getImgAlt('Nike Air Max 90', 'Nike'), alt: 'Nike Air Max 90', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'material', name: 'Material', value: 'Premium Leather', group: 'Upper' },
       { attributeId: 'sole', name: 'Sole', value: 'Air Max cushioning', group: 'Sole' },
@@ -559,7 +566,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '21', name: 'Adidas Ultraboost 23', description: 'Premium running shoes with BOOST midsole, Primeknit upper, and Continental rubber outsole.', brand: 'Adidas', model: 'Ultraboost 23', sku: 'GW9267', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Adidas Ultraboost', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Adidas Ultraboost', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'midsole', name: 'Midsole', value: 'BOOST', group: 'Cushioning' },
       { attributeId: 'upper', name: 'Upper', value: 'Primeknit+', group: 'Upper' },
@@ -571,7 +578,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '22', name: 'Nike Air Jordan 1 Retro High OG', description: 'Iconic basketball sneaker with premium leather, Air-Sole unit, and classic silhouette.', brand: 'Nike', model: 'Air Jordan 1 High', sku: 'DZ5485-612', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Air Jordan 1', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Air Jordan 1', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'material', name: 'Material', value: 'Premium Leather', group: 'Upper' },
       { attributeId: 'cushion', name: 'Cushion', value: 'Air-Sole', group: 'Cushioning' },
@@ -585,7 +592,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // FASHION - Watches
   {
     id: '23', name: 'Apple Watch Series 9 GPS 45mm', description: 'Advanced smartwatch with S9 chip, brighter display, and carbon-neutral design.', brand: 'Apple', model: 'Series 9 45mm', sku: 'MR903LL/A', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Apple Watch Series 9', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Apple Watch Series 9', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '45mm Always-On Retina', group: 'Display' },
       { attributeId: 'chip', name: 'Chip', value: 'S9 SiP', group: 'Performance' },
@@ -597,7 +604,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '24', name: 'Rolex Submariner Date', description: 'Professional divers watch with Oystersteel, Cerachrom bezel, and 41mm case.', brand: 'Rolex', model: 'Submariner Date', sku: '126610LN', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Rolex Submariner', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Rolex Submariner', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'case', name: 'Case', value: '41mm Oystersteel', group: 'Case' },
       { attributeId: 'movement', name: 'Movement', value: 'Perpetual 3235', group: 'Movement' },
@@ -611,7 +618,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // FASHION - Bags
   {
     id: '25', name: 'Herschel Supply Co. Classic Backpack', description: ' timeless backpack with 25L capacity, fleece-lined laptop sleeve, and iconic stripe.', brand: 'Herschel', model: 'Classic', sku: '10007-00890', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Herschel Backpack', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Herschel Backpack', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '25L', group: 'Storage' },
       { attributeId: 'laptop', name: 'Laptop', value: '15" sleeve', group: 'Features' },
@@ -623,7 +630,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '26', name: 'Nike Brasilia Training Duffle Bag', description: 'Spacious training bag with wet pocket, shoes compartment, and durable construction.', brand: 'Nike', model: 'Brasilia', sku: 'BA6033-010', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Nike Brasilia', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Nike Brasilia', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '30L', group: 'Storage' },
       { attributeId: 'pockets', name: 'Pockets', value: 'Multiple', group: 'Features' },
@@ -637,7 +644,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // FASHION - Clothing
   {
     id: '27', name: 'Champion Classic Reverse Weave Pullover', description: 'Iconic reverse weave hoodie with fleece lining, crew neck, and athletic fit.', brand: 'Champion', model: 'Reverse Weave', sku: 'K2124', categoryId: 'fashion',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Champion Hoodie', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Champion Hoodie', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'material', name: 'Material', value: 'Cotton/Polyester Fleece', group: 'Material' },
       { attributeId: 'fit', name: 'Fit', value: 'Athletic', group: 'Fit' },
@@ -651,7 +658,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // BEAUTY
   {
     id: '28', name: 'Dyson Airwrap Multi-Styler Complete', description: 'Versatile hair styling tool with Coanda attachments, intelligent heat control, and multiple barrels.', brand: 'Dyson', model: 'Airwrap Complete', sku: '388100-01', categoryId: 'beauty',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Dyson Airwrap', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Dyson Airwrap', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'heat', name: 'Heat Control', value: 'Intelligent 105°F', group: 'Features' },
       { attributeId: 'attachments', name: 'Attachments', value: '8+ attachments', group: 'Features' },
@@ -663,7 +670,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '29', name: 'La Mer Crème de la Mer Moisturizer', description: 'Luxury face cream with Miracle Broth, ideal for dry/combination skin.', brand: 'La Mer', model: 'Crème de la Mer', sku: 'A1021', categoryId: 'beauty',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'La Mer Cream', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'La Mer Cream', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'size', name: 'Size', value: '60ml', group: 'Details' },
       { attributeId: 'ingredient', name: 'Key Ingredient', value: 'Miracle Broth', group: 'Formula' },
@@ -677,7 +684,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // HOME APPLIANCES
   {
     id: '30', name: 'Dyson V15 Detect Vacuum', description: 'Cordless vacuum with laser dust detection, piezo sensor, and 60-minute runtime.', brand: 'Dyson', model: 'V15 Detect', sku: '358639-01', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Dyson V15', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Dyson V15', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'runtime', name: 'Runtime', value: '60 minutes', group: 'Battery' },
       { attributeId: 'suction', name: 'Suction', value: '240AW', group: 'Performance' },
@@ -689,7 +696,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '31', name: 'KitchenAid Stand Mixer 5-Quart', description: 'Professional stand mixer with 10 speeds, 5-quart bowl, and multiple attachments.', brand: 'KitchenAid', model: 'Artisan Series 5', sku: 'KSM150PSER', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'KitchenAid Mixer', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'KitchenAid Mixer', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '5-Quart', group: 'Capacity' },
       { attributeId: 'speeds', name: 'Speeds', value: '10 speeds', group: 'Performance' },
@@ -701,7 +708,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '32', name: 'Ninja Foodi 10-in-1 Air Fryer', description: 'Versatile air fryer with 10 functions, 8-quart capacity, and XL window.', brand: 'Ninja', model: 'Foodi 10-in-1', sku: 'AF100', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Ninja Air Fryer', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Ninja Air Fryer', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '8-Quart', group: 'Capacity' },
       { attributeId: 'functions', name: 'Functions', value: '10-in-1', group: 'Features' },
@@ -713,7 +720,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '33', name: 'Samsung Bespoke AI Refrigerator', description: 'Smart refrigerator with 4-door design, AI Family Hub, and customizable panels.', brand: 'Samsung', model: 'Bespoke AI', sku: 'RF30BB', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Samsung Fridge', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Samsung Fridge', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '30 cu. ft.', group: 'Capacity' },
       { attributeId: 'features', name: 'Features', value: 'AI Family Hub', group: 'Smart' },
@@ -727,7 +734,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // FURNITURE
   {
     id: '34', name: 'West Elm Harmony Sofa', description: 'Modern sofa with down-blend cushions, solid wood frame, and customizable options.', brand: 'West Elm', model: 'Harmony', sku: '10868', categoryId: 'furniture',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'West Elm Sofa', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'West Elm Sofa', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'dimensions', name: 'Dimensions', value: '84"W x 38"D x 34"H', group: 'Size' },
       { attributeId: 'material', name: 'Material', value: 'Solid Wood Frame', group: 'Construction' },
@@ -739,7 +746,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '35', name: 'Herman Miller Aeron Chair', description: 'Ergonomic office chair with PostureFit SL, 8Z Pellicle, and fully adjustable arms.', brand: 'Herman Miller', model: 'Aeron', sku: 'AER1B23BP', categoryId: 'furniture',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Herman Miller Aeron', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Herman Miller Aeron', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'size', name: 'Size', value: 'Size B (Medium)', group: 'Size' },
       { attributeId: 'material', name: 'Material', value: '8Z Pellicle', group: 'Seat' },
@@ -753,7 +760,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // SPORTS
   {
     id: '36', name: 'Peloton Bike+', description: 'Interactive stationary bike with 24" rotating HD touchscreen and Apple GymKit integration.', brand: 'Peloton', model: 'Bike+', sku: 'PLT-BIKEPLUS-02', categoryId: 'sports',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Peloton Bike+', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Peloton Bike+', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'screen', name: 'Screen', value: '24" HD Rotating', group: 'Display' },
       { attributeId: 'resistance', name: 'Resistance', value: '100 Levels', group: 'Performance' },
@@ -765,7 +772,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '37', name: 'Nike Metcon 9', description: 'Versatile training shoe with stable heel, breathable mesh, and durable rubber outsole.', brand: 'Nike', model: 'Metcon 9', sku: 'DX9236-001', categoryId: 'sports',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Nike Metcon 9', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Nike Metcon 9', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'drop', name: 'Heel Drop', value: '4mm', group: 'Support' },
       { attributeId: 'weight', name: 'Weight', value: '8.1oz', group: 'Weight' },
@@ -777,7 +784,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '38', name: 'Title Boxing Pro Style Heavy Bag', description: 'Professional heavy bag with premium leather, 100lb weight, and reinforced straps.', brand: 'Title Boxing', model: 'Pro Style', sku: 'PB-100', categoryId: 'sports',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Boxing Heavy Bag', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Boxing Heavy Bag', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'weight', name: 'Weight', value: '100 lbs', group: 'Weight' },
       { attributeId: 'material', name: 'Material', value: 'Premium Leather', group: 'Material' },
@@ -791,7 +798,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // AUTOMOTIVE
   {
     id: '39', name: 'Garmin DriveSmart 86 GPS', description: '8" GPS navigator with traffic alerts, voice assist, and wireless smartphone integration.', brand: 'Garmin', model: 'DriveSmart 86', sku: '010-02836-00', categoryId: 'automotive',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Garmin GPS', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Garmin GPS', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'screen', name: 'Screen', value: '8" HD', group: 'Display' },
       { attributeId: 'features', name: 'Features', value: 'Voice Assist', group: 'Features' },
@@ -803,7 +810,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '40', name: 'Dashcam 4K Ultra HD Car Camera', description: '4K dash cam with night vision, loop recording, and G-sensor accident protection.', brand: 'Rexing', model: 'V1 4K', sku: 'REX-V1-4K', categoryId: 'automotive',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Dashcam', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Dashcam', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'resolution', name: 'Resolution', value: '4K Ultra HD', group: 'Video' },
       { attributeId: 'night', name: 'Night Vision', value: 'Super Night Vision', group: 'Features' },
@@ -817,7 +824,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // KIDS & TOYS
   {
     id: '41', name: 'LEGO Star Wars Millennium Falcon', description: 'Ultimate collectors edition Millennium Falcon with 7541 pieces and detailed interior.', brand: 'LEGO', model: 'Star Wars 75192', sku: '75192', categoryId: 'kids-toys',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'LEGO Millennium Falcon', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'LEGO Millennium Falcon', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'pieces', name: 'Pieces', value: '7,541', group: 'Details' },
       { attributeId: 'theme', name: 'Theme', value: 'Star Wars', group: 'Theme' },
@@ -829,7 +836,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '42', name: 'PlayStation 5 DualSense Controller', description: 'Next-gen controller with haptic feedback, adaptive triggers, and built-in microphone.', brand: 'Sony', model: 'DualSense', sku: 'CFI-ZCV1', categoryId: 'kids-toys',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'DualSense Controller', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'DualSense Controller', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'features', name: 'Features', value: 'Haptic Feedback', group: 'Features' },
       { attributeId: 'triggers', name: 'Triggers', value: 'Adaptive', group: 'Features' },
@@ -843,7 +850,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   // OFFICE
   {
     id: '43', name: 'HP OfficeJet Pro 9015e Printer', description: 'All-in-one printer with automatic document feeder, double-sided printing, and HP+ smart features.', brand: 'HP', model: 'OfficeJet Pro 9015e', sku: '1G5M3A#BH3', categoryId: 'office-stationery',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'HP Printer', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'HP Printer', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'type', name: 'Type', value: 'All-in-One', group: 'Type' },
       { attributeId: 'print', name: 'Print Speed', value: '22 ppm', group: 'Performance' },
@@ -855,7 +862,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '44', name: 'Bose QuietComfort 45 Headphones', description: 'Premium noise-canceling headphones with 24-hour battery andAware mode.', brand: 'Bose', model: 'QC45', sku: '866724-0100', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Bose QC45', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Bose QC45', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'anc', name: 'Noise Cancellation', value: 'Active (Adjustable)', group: 'Features' },
       { attributeId: 'battery', name: 'Battery', value: '24 hours', group: 'Battery' },
@@ -867,7 +874,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '45', name: 'JBL Flip 6 Portable Speaker', description: 'Compact waterproof Bluetooth speaker with 12 hours battery and PartyBoost feature.', brand: 'JBL', model: 'Flip 6', sku: 'JBLFLIP6BLK', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'JBL Flip 6', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'JBL Flip 6', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'battery', name: 'Battery', value: '12 hours', group: 'Battery' },
       { attributeId: 'waterproof', name: 'Waterproof', value: 'IPX7', group: 'Durability' },
@@ -879,7 +886,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '46', name: 'Fitbit Charge 6 Fitness Tracker', description: 'Advanced fitness tracker with Google integrations, GPS, and 7-day battery.', brand: 'Fitbit', model: 'Charge 6', sku: 'FB512GLP', categoryId: 'electronics',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Fitbit Charge 6', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Fitbit Charge 6', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'battery', name: 'Battery', value: '7 days', group: 'Battery' },
       { attributeId: 'gps', name: 'GPS', value: 'Built-in', group: 'Features' },
@@ -891,7 +898,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '47', name: 'Instant Pot Duo 7-in-1 Electric Pressure Cooker', description: 'Multi-functional cooker with 6 quart capacity, 14 smart programs, and stainless steel inner pot.', brand: 'Instant Pot', model: 'Duo 7-in-1', sku: 'IP-DUO60', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Instant Pot', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Instant Pot', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '6 Quart', group: 'Capacity' },
       { attributeId: 'programs', name: 'Programs', value: '14 Smart Programs', group: 'Features' },
@@ -903,7 +910,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '48', name: 'Weber Spirit II E-310 Gas Grill', description: '3-burner gas grill with porcelain-enameled cast iron grates, side tables, and GS4 grilling system.', brand: 'Weber', model: 'Spirit II E-310', sku: '45010001', categoryId: 'garden-diy',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Weber Grill', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Weber Grill', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'burners', name: 'Burners', value: '3', group: 'Cooking' },
       { attributeId: 'btu', name: 'BTU', value: '30,000', group: 'Performance' },
@@ -915,7 +922,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '49', name: 'Weber Original Kettle Premium Charcoal Grill', description: 'Classic 22-inch charcoal grill with One-Touch cleaning system and ash catcher.', brand: 'Weber', model: 'Original Kettle', sku: '14502001', categoryId: 'garden-diy',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Weber Charcoal Grill', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Weber Charcoal Grill', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'size', name: 'Size', value: '22" Diameter', group: 'Size' },
       { attributeId: 'material', name: 'Material', value: 'Porcelain-Enameled', group: 'Material' },
@@ -927,7 +934,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '50', name: 'Ninja DT201 Professional Air Fryer XXL', description: 'Extra-large air fryer with 5.5 quart capacity, 4-Quart oven, and dehydrate function.', brand: 'Ninja', model: 'Foodi 4-Quart', sku: 'DT201', categoryId: 'appliances',
-    images: [{ id: '1', url: getImgAlt('Product', 'Brand'), thumbnail: getImgAlt('Product', 'Brand'), alt: 'Ninja Air Fryer XXL', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Ninja Air Fryer XXL', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'capacity', name: 'Capacity', value: '4-Quart + 5.5-Quart', group: 'Capacity' },
       { attributeId: 'functions', name: 'Functions', value: '5-in-1', group: 'Features' },

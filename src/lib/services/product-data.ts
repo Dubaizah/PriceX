@@ -14,6 +14,55 @@ import { comparisonEngine } from '../engine/comparison';
 import { cacheService } from '../engine/cache';
 import { UnifiedProduct as EngineProduct, SellerOffer, RankedSeller } from '@/types/engine';
 
+// Smart image mapping based on product name/brand
+function getSmartImage(name: string, brand: string, fallbackUrl: string): string {
+  const n = (name || '').toLowerCase();
+  const b = (brand || '').toLowerCase();
+  
+  const imageMap: [string[], string][] = [
+    [['iphone', 'ipad', 'macbook', 'apple'], 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'],
+    [['galaxy', 'samsung smartphone'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
+    [['pixel', 'google phone'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
+    [['macbook pro', 'macbook air'], 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
+    [['xps', 'dell laptop'], 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400'],
+    [['thinkpad', 'lenovo'], 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400'],
+    [['spectre', 'hp laptop'], 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400'],
+    [['rog', 'asus gaming'], 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400'],
+    [['surface', 'microsoft laptop'], 'https://images.unsplash.com/photo-1593642632823-8f78536788c6?w=400'],
+    [['ipad pro', 'ipad air', 'tablet'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
+    [['apple watch', 'smartwatch'], 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400'],
+    [['galaxy watch', 'samsung watch'], 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400'],
+    [['airpods', 'headphone', 'earbud'], 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400'],
+    [['sony wh', 'sony wf', 'sony headphone'], 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=400'],
+    [['bose', 'quietcomfort'], 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400'],
+    [['galaxy bud'], 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400'],
+    [['camera', 'sony a7', 'canon', 'nikon', 'fujifilm'], 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400'],
+    [['drone', 'dji'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
+    [['playstation', 'ps5'], 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'],
+    [['xbox'], 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400'],
+    [['nintendo', 'switch'], 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=400'],
+    [['oled tv', 'tv', 'television'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
+    [['dyson', 'vacuum'], 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=400'],
+    [['nike', 'air max', 'jordan', 'dunk'], 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'],
+    [['adidas', 'ultraboost', 'samba', 'stan smith'], 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400'],
+    [['rolex', 'omega', 'luxury watch'], 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400'],
+    [['vuitton', 'gucci', 'hermès', 'coach', 'bag'], 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400'],
+    [['laptop', 'computer'], 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400'],
+    [['fitbit', 'garmin'], 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400'],
+    [['jbl', 'speaker'], 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400'],
+  ];
+  
+  for (const [keywords, url] of imageMap) {
+    for (const kw of keywords) {
+      if (n.includes(kw) || b.includes(kw)) {
+        return url;
+      }
+    }
+  }
+  
+  return fallbackUrl || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400';
+}
+
 export interface UnifiedProduct {
   id: string;
   name: string;
@@ -168,7 +217,7 @@ export class ProductDataService {
       name: p.name,
       brand: p.brand,
       description: p.description,
-      imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+      imageUrl: getSmartImage(p.name, p.brand, p.images?.[0]?.url) || '/product-1.jpg',
       category: p.category?.name,
       rating: p.rating,
       reviewCount: p.reviewCount,
@@ -247,7 +296,7 @@ export class ProductDataService {
         name: p.name,
         brand: p.brand,
         description: p.description,
-        imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+        imageUrl: getSmartImage(p.name, p.brand, p.images?.[0]?.url) || '/product-1.jpg',
         category: p.category?.name,
         rating: p.rating,
         reviewCount: p.reviewCount,
@@ -295,7 +344,7 @@ export class ProductDataService {
       name: p.name,
       brand: p.brand,
       description: p.description,
-      imageUrl: p.images?.[0]?.url || '/product-1.jpg',
+      imageUrl: getSmartImage(p.name, p.brand, p.images?.[0]?.url) || '/product-1.jpg',
       category: p.category?.name,
       rating: p.rating,
       reviewCount: p.reviewCount,

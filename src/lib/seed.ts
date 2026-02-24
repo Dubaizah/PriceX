@@ -514,20 +514,22 @@ export const SEED_PRODUCTS: SeedProduct[] = [
 
   // ELECTRONICS - Gaming
   {
-    id: '17', name: 'Sony PlayStation 5 Slim', description: 'Next-gen gaming console with 1TB SSD, 4K gaming, and DualSense controller.', brand: 'Sony', model: 'PS5 Slim', sku: 'CFI-7000', categoryId: 'electronics',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'PlayStation 5', type: 'main', order: 1 }],
+id: '17', name: 'Sony PlayStation 5 Slim', description: 'Next-gen gaming console with 1TB SSD, 4K gaming, and DualSense controller.', brand: 'Sony', model: 'PS5 Slim', sku: 'CFI-7000', categoryId: 'electronics',
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400', thumbnail: 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=200', alt: 'PlayStation 5', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'storage', name: 'Storage', value: '1TB SSD', group: 'Storage' },
       { attributeId: 'resolution', name: 'Resolution', value: 'Up to 4K 120Hz', group: 'Performance' },
       { attributeId: 'gpu', name: 'GPU', value: '10.3 TFLOPs RDNA 2', group: 'Graphics' },
     ],
+    attributes: { storage: '1TB SSD', color: 'White', brand: 'Sony' },
+    pricePoints: generatePrices(499, ['amazon-us', 'bestbuy', 'walmart', 'target']),
+    rating: 4.9, reviewCount: 8932, tags: ['gaming', 'console', 'playstation', 'ps5', 'sony', '4k', 'next-gen'],
     attributes: { storage: '1TB', brand: 'Sony', platform: 'playstation' },
     pricePoints: generatePrices(499, ['amazon-us', 'bestbuy', 'walmart', 'target']),
-    rating: 4.9, reviewCount: 12345, tags: ['gaming', 'playstation', 'console', 'next-gen'],
   },
   {
     id: '18', name: 'Xbox Series X', description: 'Most powerful Xbox ever with 12 teraflops, Quick Resume, and 4K gaming.', brand: 'Microsoft', model: 'Series X', sku: 'RRT-00001', categoryId: 'electronics',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Xbox Series X', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400', thumbnail: 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=200', alt: 'Xbox Series X', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'storage', name: 'Storage', value: '1TB NVMe SSD', group: 'Storage' },
       { attributeId: 'resolution', name: 'Resolution', value: 'Up to 4K 120fps', group: 'Performance' },

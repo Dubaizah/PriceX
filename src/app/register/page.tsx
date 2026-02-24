@@ -1,6 +1,6 @@
 /**
  * PriceX - Register Page
- * User registration with simplified flow
+ * User registration with strong password requirements
  */
 
 'use client';
@@ -9,7 +9,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Check, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Check } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
@@ -31,23 +31,23 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const passwordRequirements = [
-    { met: password.length >= 8 && password.length <= 32, text: '8-32 characters' },
-    { met: /[A-Z]/.test(password), text: 'One uppercase letter' },
-    { met: /[0-9]/.test(password), text: 'One number' },
-  ];
+  const hasMinLength = password.length >= 8;
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasNumbers = /[0-9]/.test(password);
+  const hasSpecial = /[!@#$%^&*]/.test(password);
+  
+  const criteriaCount = [hasLowercase, hasUppercase, hasNumbers, hasSpecial].filter(Boolean).length;
+  const passwordValid = hasMinLength && criteriaCount >= 3;
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
-  const allRequirementsMet = 
-    passwordRequirements.every(r => r.met) && 
-    password === confirmPassword && 
-    name && email && mobile && 
-    agreedToTerms && captchaVerified;
+  const allValid = name && email && mobile && passwordValid && passwordsMatch && agreedToTerms && captchaVerified;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!allRequirementsMet) {
+    if (!allValid) {
       setError('Please complete all fields correctly');
       return;
     }
@@ -81,7 +81,7 @@ export default function RegisterPage() {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold mb-2">Create Account</h1>
               <p className="text-muted-foreground">
-                Join PriceX with full security verification
+                Join PriceX and start saving
               </p>
             </div>
 
@@ -98,7 +98,7 @@ export default function RegisterPage() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
                 <p className="text-muted-foreground mb-6">
-                  Your account has been created successfully with mandatory 2FA enabled.
+                  You can now sign in with your account.
                 </p>
                 <Link 
                   href="/login" 
@@ -113,13 +113,13 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Full Name *</label>
                   <div className="relative">
-                    <User className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-4' : 'left-4'}`} />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
-                      className={`w-full h-12 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none`}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                       required
                     />
                   </div>
@@ -128,13 +128,13 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Email *</label>
                   <div className="relative">
-                    <Mail className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-4' : 'left-4'}`} />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className={`w-full h-12 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none`}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                       required
                     />
                   </div>
@@ -143,13 +143,13 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Mobile Number *</label>
                   <div className="relative">
-                    <Phone className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-4' : 'left-4'}`} />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type="tel"
                       value={mobile}
                       onChange={(e) => setMobile(e.target.value)}
                       placeholder="+971500000000"
-                      className={`w-full h-12 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none`}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                       required
                     />
                   </div>
@@ -158,50 +158,73 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Password *</label>
                   <div className="relative">
-                    <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-4' : 'left-4'}`} />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Create a strong password"
-                      className={`w-full h-12 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-12'} rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none`}
+                      className="w-full h-12 pl-12 pr-12 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-4' : 'right-4'}`}
+                      className="absolute right-3 top-1/2 -translate-y-1/2"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
                     </button>
                   </div>
-                  <div className="mt-2 space-y-1">
-                    {passwordRequirements.map((req, index) => (
-                      <div key={index} className="flex items-center gap-2 text-xs">
-                        <div className={`w-3 h-3 rounded-full flex items-center justify-center ${req.met ? 'bg-green-500' : 'bg-gray-300'}`}>
-                          {req.met && <Check className="w-2 h-2 text-white" />}
-                        </div>
-                        <span className={req.met ? 'text-green-500' : 'text-muted-foreground'}>{req.text}</span>
+                  
+                  <div className="mt-3 space-y-2">
+                    <div className={`flex items-center gap-2 text-sm ${hasMinLength ? 'text-green-500' : 'text-muted-foreground'}`}>
+                      {hasMinLength ? <Check className="w-4 h-4" /> : <div className="w-4 h-4" />}
+                      At least 8 characters
+                    </div>
+                    
+                    <div className="text-sm text-muted-foreground">
+                      At least 3 of the following:
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 ml-4">
+                      <div className={`flex items-center gap-2 text-sm ${hasLowercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        {hasLowercase ? <Check className="w-4 h-4" /> : <div className="w-4 h-4" />}
+                        Lower case (a-z)
                       </div>
-                    ))}
+                      
+                      <div className={`flex items-center gap-2 text-sm ${hasUppercase ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        {hasUppercase ? <Check className="w-4 h-4" /> : <div className="w-4 h-4" />}
+                        Upper case (A-Z)
+                      </div>
+                      
+                      <div className={`flex items-center gap-2 text-sm ${hasNumbers ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        {hasNumbers ? <Check className="w-4 h-4" /> : <div className="w-4 h-4" />}
+                        Numbers (0-9)
+                      </div>
+                      
+                      <div className={`flex items-center gap-2 text-sm ${hasSpecial ? 'text-green-500' : 'text-muted-foreground'}`}>
+                        {hasSpecial ? <Check className="w-4 h-4" /> : <div className="w-4 h-4" />}
+                        Special chars
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Confirm Password *</label>
                   <div className="relative">
-                    <Lock className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground ${isRTL ? 'right-4' : 'left-4'}`} />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
-                      className={`w-full h-12 ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none`}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-secondary border border-border focus:border-[var(--pricex-yellow)] outline-none"
                       required
                     />
                   </div>
-                  {confirmPassword && password !== confirmPassword && (
-                    <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
+                  {confirmPassword && !passwordsMatch && (
+                    <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
                   )}
                 </div>
 
@@ -226,14 +249,9 @@ export default function RegisterPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-sm text-blue-500">
-                  <Shield className="w-4 h-4" />
-                  <span>Mandatory 2FA will be enabled for your account</span>
-                </div>
-
                 <button
                   type="submit"
-                  disabled={!allRequirementsMet || isLoading}
+                  disabled={!allValid || isLoading}
                   className="w-full h-12 bg-[var(--pricex-yellow)] text-black font-semibold rounded-xl hover:bg-[var(--pricex-yellow-dark)] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}

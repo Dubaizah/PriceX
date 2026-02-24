@@ -164,15 +164,17 @@ export class ProductDataService {
       sources.push('local');
     }
 
-    // TEMPORARILY DISABLED - External APIs returning fake data
-    // Enable after fixing the API integrations
-    /*
     // 2. Search Amazon (all regions)
     if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
       try {
         const amazonResults = await this.searchAmazon(query, region, limit);
         if (amazonResults.length > 0) {
-          results.push(...amazonResults);
+          // Apply smart images to Amazon results
+          const amazonWithImages = amazonResults.map(p => ({
+            ...p,
+            imageUrl: p.imageUrl || getSmartImage(p.name, p.brand, '/product-1.jpg')
+          }));
+          results.push(...amazonWithImages);
           sources.push('amazon');
         }
       } catch (error) {
@@ -185,7 +187,12 @@ export class ProductDataService {
       try {
         const ebayResults = await this.searchEbay(query, region, limit);
         if (ebayResults.length > 0) {
-          results.push(...ebayResults);
+          // Apply smart images to eBay results
+          const ebayWithImages = ebayResults.map(p => ({
+            ...p,
+            imageUrl: p.imageUrl || getSmartImage(p.name, p.brand, '/product-1.jpg')
+          }));
+          results.push(...ebayWithImages);
           sources.push('ebay');
         }
       } catch (error) {
@@ -198,14 +205,18 @@ export class ProductDataService {
       try {
         const scrapedResults = await this.scrapeRetailers(query, limit);
         if (scrapedResults.length > 0) {
-          results.push(...scrapedResults);
+          // Apply smart images to scraped results
+          const scrapedWithImages = scrapedResults.map(p => ({
+            ...p,
+            imageUrl: p.imageUrl || getSmartImage(p.name, p.brand, '/product-1.jpg')
+          }));
+          results.push(...scrapedWithImages);
           sources.push('scraped');
         }
       } catch (error) {
         console.error('Scraper error:', error);
       }
     }
-    */
 
     // Deduplicate and sort results
     const unified = this.deduplicateAndSort(results, options);
@@ -405,7 +416,7 @@ export class ProductDataService {
             id: `amazon_${product.asin}`,
             name: product.title,
             brand: product.brand || this.extractBrand(product.title),
-            imageUrl: product.imageUrl,
+            imageUrl: product.imageUrl || getSmartImage(product.title, product.brand || '', '/product-1.jpg'),
             rating: product.rating,
             reviewCount: product.reviewCount,
             prices: [],
@@ -448,7 +459,7 @@ export class ProductDataService {
         id: `ebay_${product.id}`,
         name: product.title,
         brand: product.brand || this.extractBrand(product.title),
-        imageUrl: product.imageUrl,
+        imageUrl: product.imageUrl || getSmartImage(product.title, product.brand || '', '/product-1.jpg'),
         rating: product.rating,
         reviewCount: product.reviewCount,
         prices: [{
@@ -484,7 +495,7 @@ export class ProductDataService {
         id: product.id,
         name: product.name,
         brand: product.brand,
-        imageUrl: product.imageUrl,
+        imageUrl: product.imageUrl || getSmartImage(product.name, product.brand, '/product-1.jpg'),
         prices: [{
           retailer: product.retailer.name,
           retailerId: product.retailer.id,

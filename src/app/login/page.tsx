@@ -343,9 +343,18 @@ export default function LoginPage() {
                   </div>
                   <h2 className="text-xl font-semibold mb-2">Two-Factor Authentication</h2>
                   <p className="text-muted-foreground text-sm">
-                    Enter the 6-digit code sent to your email
+                    Enter the 6-digit code from your email
                   </p>
                 </div>
+
+                {/* Show code on screen as fallback */}
+                {demoCode && (
+                  <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-center">
+                    <p className="text-green-500 text-sm mb-2">Your verification code:</p>
+                    <p className="text-3xl font-mono font-bold text-green-500 tracking-wider">{demoCode}</p>
+                    <p className="text-muted-foreground text-xs mt-2">Use this code to sign in</p>
+                  </div>
+                )}
 
                 <div>
                   <input

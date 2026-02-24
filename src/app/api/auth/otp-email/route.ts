@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
     if (result.success) {
       return NextResponse.json({
         success: true,
-        message: 'Verification code sent to your email',
+        message: 'Verification code sent',
+        demoCode: result.demoCode, // Show on screen if SendGrid fails
       });
     } else {
       return NextResponse.json(

@@ -108,8 +108,9 @@ export default function ProductDetailsPage() {
           const productName = sampleProduct?.name || 'iPhone 15 Pro Max';
           const response = await fetch(`/api/products/search?q=${encodeURIComponent(productName)}&limit=1`);
           const data = await response.json();
-          if (data.products?.[0]?.pricePoints) {
-            comparisonData = data.products[0].pricePoints.map((pp: any) => ({
+          if (data.products?.[0]?.prices || data.products?.[0]?.pricePoints) {
+            const priceData = data.products[0].prices || data.products[0].pricePoints;
+            comparisonData = priceData.map((pp: any) => ({
               id: pp.retailerId || Math.random().toString(),
               name: pp.retailer?.name || pp.retailer || 'Unknown',
               logo: pp.retailer?.logo || '',

@@ -61,11 +61,19 @@ export default function SearchPage() {
           id: p.id,
           name: p.name,
           brand: p.brand,
-          price: p.pricePoints?.[0]?.price || p.priceRange?.min || 0,
-          image: p.images?.[0]?.url || '/product-1.jpg',
+          price: p.prices?.[0]?.price || p.pricePoints?.[0]?.price || p.priceRange?.min || 0,
+          image: p.imageUrl || p.images?.[0]?.url || '/product-1.jpg',
           rating: p.rating || 0,
           reviews: p.reviewCount || 0,
-          prices: p.pricePoints?.map((pp: any) => ({
+          prices: p.prices?.map((pp: any) => ({
+            retailer: pp.retailer || 'Unknown',
+            price: pp.price,
+            currency: pp.currency || 'USD',
+            rank: pp.rank,
+            cheapestFlag: pp.cheapestFlag,
+            dealScore: pp.dealScore,
+            totalLandedCost: pp.totalLandedCost,
+          })) || p.pricePoints?.map((pp: any) => ({
             retailer: pp.retailer?.name || 'Unknown',
             price: pp.price,
             currency: pp.currency || 'USD',

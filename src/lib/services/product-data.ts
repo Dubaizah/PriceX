@@ -157,13 +157,16 @@ export class ProductDataService {
     const results: UnifiedProduct[] = [];
     const sources: string[] = [];
 
-    // 1. Search local database (sample products)
+    // 1. Search local database (sample products) - PRIORITY
     const localProducts = this.searchLocalProducts(query, limit);
     if (localProducts.length > 0) {
       results.push(...localProducts);
       sources.push('local');
     }
 
+    // TEMPORARILY DISABLED - External APIs returning fake data
+    // Enable after fixing the API integrations
+    /*
     // 2. Search Amazon (all regions)
     if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
       try {
@@ -202,6 +205,7 @@ export class ProductDataService {
         console.error('Scraper error:', error);
       }
     }
+    */
 
     // Deduplicate and sort results
     const unified = this.deduplicateAndSort(results, options);

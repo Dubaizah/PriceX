@@ -12,27 +12,20 @@ export async function POST(request: NextRequest) {
     const { email, purpose } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
 
-    // Generate 6-digit OTP
     const code = generateOTP();
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const expiresAt = Date.now() + 10 * 60 * 1000;
 
-    // Store OTP
     pendingOTPs.set(email.toLowerCase(), { code, email: email.toLowerCase(), expiresAt });
 
-    // Send email
     const result = await sendOTPEmail(email, code, purpose || 'verification');
 
     if (result.success) {
       return NextResponse.json({
         success: true,
-        message: 'Verification code sent',
-        demoCode: result.demoCode, // Show on screen if SendGrid fails
+        message: 'Verification code sent to your email',
       });
     } else {
       return NextResponse.json(
@@ -41,11 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('Send OTP email error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -54,49 +43,28 @@ export async function PUT(request: NextRequest) {
     const { email, code } = await request.json();
 
     if (!email || !code) {
-      return NextResponse.json(
-        { success: false, error: 'Email and code are required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Email and code are required' }, { status: 400 });
     }
 
     const key = email.toLowerCase();
     const pending = pendingOTPs.get(key);
 
     if (!pending) {
-      return NextResponse.json(
-        { success: false, error: 'No code requested or code expired' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'No code requested' }, { status: 400 });
     }
 
     if (Date.now() > pending.expiresAt) {
       pendingOTPs.delete(key);
-      return NextResponse.json(
-        { success: false, error: 'Code has expired' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Code expired' }, { status: 400 });
     }
 
     if (pending.code !== code) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid code' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Invalid code' }, { status: 400 });
     }
 
-    // OTP verified - delete from pending
     pendingOTPs.delete(key);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Email verified successfully',
-    });
+    return NextResponse.json({ success: true, message: 'Verified' });
   } catch (error) {
-    console.error('Verify OTP email error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Error' }, { status: 500 });
   }
 }

@@ -38,7 +38,7 @@ function getSmartImage(name: string, brand: string, fallbackUrl: string): string
     // Google
     [['pixel'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
     // Gaming
-    [['playstation 5', 'ps5'], 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'],
+    [['playstation 5', 'ps5', 'playstation', 'ps4'], 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'],
     [['xbox series'], 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400'],
     [['nintendo switch', 'steam deck'], 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=400'],
     // Drones

@@ -67,11 +67,15 @@ export default function SearchPage() {
 
   // Trigger search on page load with query param
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    if (q) {
-      doSearch(q);
-    }
+    if (typeof window === 'undefined') return;
+    // Use setTimeout to ensure this runs after hydration
+    setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      if (q && q !== query) {
+        doSearch(q);
+      }
+    }, 100);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {

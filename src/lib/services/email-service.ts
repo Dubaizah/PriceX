@@ -12,8 +12,13 @@ interface EmailResponse {
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM || 'noreply@pricex.com';
 
+console.log('[EMAIL SERVICE] SendGrid API Key configured:', !!SENDGRID_API_KEY);
+console.log('[EMAIL SERVICE] Email From:', EMAIL_FROM);
+
 export async function sendOTPEmail(to: string, code: string, purpose: string = 'verification'): Promise<EmailResponse> {
   const subject = purpose === 'login' ? 'PriceX - Your Login Verification Code' : 'PriceX - Your Verification Code';
+  
+  console.log('[EMAIL SERVICE] Sending to:', to, 'Code:', code);
   
   const emailHtml = `
 <!DOCTYPE html>
@@ -73,13 +78,14 @@ export async function sendOTPEmail(to: string, code: string, purpose: string = '
     });
 
     if (response.ok || response.status === 202) {
+      console.log('[EMAIL SERVICE] Email sent successfully!');
       return {
         success: true,
         messageId: `sg_${Date.now()}`,
       };
     } else {
       const errorText = await response.text();
-      console.error('SendGrid error:', errorText);
+      console.error('[EMAIL SERVICE] SendGrid error:', response.status, errorText);
       return {
         success: false,
         error: 'Failed to send email. Please try again.',

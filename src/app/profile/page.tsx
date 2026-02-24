@@ -30,6 +30,38 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showRegionDropdown, setShowRegionDropdown] = useState(false);
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'ar', name: 'العربية' },
+    { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'zh', name: '中文' },
+  ];
+
+  const regions = [
+    { code: 'global', name: 'Global' },
+    { code: 'north-america', name: 'North America' },
+    { code: 'europe', name: 'Europe' },
+    { code: 'asia-pacific', name: 'Asia Pacific' },
+    { code: 'middle-east', name: 'Middle East' },
+    { code: 'africa', name: 'Africa' },
+    { code: 'south-america', name: 'South America' },
+  ];
+
+  const currencies = [
+    { code: 'USD', name: 'USD ($)' },
+    { code: 'EUR', name: 'EUR (€)' },
+    { code: 'GBP', name: 'GBP (£)' },
+    { code: 'AED', name: 'AED (د.إ)' },
+    { code: 'SAR', name: 'SAR (﷼)' },
+    { code: 'CNY', name: 'CNY (¥)' },
+    { code: 'INR', name: 'INR (₹)' },
+  ];
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -46,6 +78,25 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await logout();
     router.push('/');
+  };
+
+  const updateUserSetting = (key: string, value: string) => {
+    const users = JSON.parse(localStorage.getItem('pricex-users') || '[]');
+    const currentUser = JSON.parse(localStorage.getItem('pricex-auth-session') || '{}');
+    
+    const userIndex = users.findIndex((u: any) => u.id === currentUser.user?.id);
+    if (userIndex !== -1) {
+      if (!users[userIndex].profile) users[userIndex].profile = {};
+      users[userIndex].profile[key] = value;
+      localStorage.setItem('pricex-users', JSON.stringify(users));
+      
+      // Update session
+      currentUser.user.profile[key] = value;
+      localStorage.setItem('pricex-auth-session', JSON.stringify(currentUser));
+      
+      // Force refresh
+      window.location.reload();
+    }
   };
 
   if (isLoading) {
@@ -223,52 +274,113 @@ export default function ProfilePage() {
                 {/* Settings Tab */}
                 {activeTab === 'settings' && (
                   <div className="space-y-6">
-                    <h2 className="text-xl font-semibold">{t('profile.accountSettings', 'Account Settings')}</h2>
+                    <h2 className="text-xl font-semibold">Account Settings</h2>
 
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50">
-                        <div className="flex items-center gap-4">
-                          <Globe className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{t('profile.language', 'Language')}</p>
-                            <p className="text-sm text-muted-foreground">{user.profile?.language || 'English'}</p>
+                      {/* Language */}
+                      <div className="relative">
+                        <div 
+                          className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 cursor-pointer hover:bg-secondary"
+                          onClick={() => { setShowLanguageDropdown(!showLanguageDropdown); setShowRegionDropdown(false); setShowCurrencyDropdown(false); }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <Globe className="w-5 h-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Language</p>
+                              <p className="text-sm text-muted-foreground">{languages.find(l => l.code === user.profile?.language)?.name || 'English'}</p>
+                            </div>
                           </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        {showLanguageDropdown && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                            {languages.map(lang => (
+                              <div 
+                                key={lang.code}
+                                className="p-3 hover:bg-secondary cursor-pointer flex items-center justify-between"
+                                onClick={() => { updateUserSetting('language', lang.code); setShowLanguageDropdown(false); }}
+                              >
+                                <span>{lang.name}</span>
+                                {user.profile?.language === lang.code && <Check className="w-4 h-4 text-green-500" />}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50">
-                        <div className="flex items-center gap-4">
-                          <Globe className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{t('profile.region', 'Region')}</p>
-                            <p className="text-sm text-muted-foreground">{user.profile?.region || 'Global'}</p>
+                      {/* Region */}
+                      <div className="relative">
+                        <div 
+                          className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 cursor-pointer hover:bg-secondary"
+                          onClick={() => { setShowRegionDropdown(!showRegionDropdown); setShowLanguageDropdown(false); setShowCurrencyDropdown(false); }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <Globe className="w-5 h-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Region</p>
+                              <p className="text-sm text-muted-foreground">{regions.find(r => r.code === user.profile?.region)?.name || 'Global'}</p>
+                            </div>
                           </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        {showRegionDropdown && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                            {regions.map(region => (
+                              <div 
+                                key={region.code}
+                                className="p-3 hover:bg-secondary cursor-pointer flex items-center justify-between"
+                                onClick={() => { updateUserSetting('region', region.code); setShowRegionDropdown(false); }}
+                              >
+                                <span>{region.name}</span>
+                                {user.profile?.region === region.code && <Check className="w-4 h-4 text-green-500" />}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50">
-                        <div className="flex items-center gap-4">
-                          <CreditCard className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{t('profile.currency', 'Currency')}</p>
-                            <p className="text-sm text-muted-foreground">{user.profile?.currency || 'USD'}</p>
+                      {/* Currency */}
+                      <div className="relative">
+                        <div 
+                          className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 cursor-pointer hover:bg-secondary"
+                          onClick={() => { setShowCurrencyDropdown(!showCurrencyDropdown); setShowLanguageDropdown(false); setShowRegionDropdown(false); }}
+                        >
+                          <div className="flex items-center gap-4">
+                            <CreditCard className="w-5 h-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Currency</p>
+                              <p className="text-sm text-muted-foreground">{currencies.find(c => c.code === user.profile?.currency)?.name || 'USD ($)'}</p>
+                            </div>
                           </div>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        {showCurrencyDropdown && (
+                          <div className="absolute z-50 left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+                            {currencies.map(currency => (
+                              <div 
+                                key={currency.code}
+                                className="p-3 hover:bg-secondary cursor-pointer flex items-center justify-between"
+                                onClick={() => { updateUserSetting('currency', currency.code); setShowCurrencyDropdown(false); }}
+                              >
+                                <span>{currency.name}</span>
+                                {user.profile?.currency === currency.code && <Check className="w-4 h-4 text-green-500" />}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
+                    </div>
 
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50">
-                        <div className="flex items-center gap-4">
-                          <Bell className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium">{t('profile.notifications', 'Notifications')}</p>
-                            <p className="text-sm text-muted-foreground">{t('profile.manageNotifications', 'Manage notification preferences')}</p>
-                          </div>
+                    {/* Notifications */}
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/50">
+                      <div className="flex items-center gap-4">
+                        <Bell className="w-5 h-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{t('profile.notifications', 'Notifications')}</p>
+                          <p className="text-sm text-muted-foreground">{t('profile.manageNotifications', 'Manage notification preferences')}</p>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
 
                     {/* GDPR Consent */}

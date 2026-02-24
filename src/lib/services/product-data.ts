@@ -1,6 +1,7 @@
 /**
  * PriceX - Unified Product Data Service
  * Combines data from Amazon, eBay, scrapers, and local database
+ * Now includes Comparison Engine for price ranking
  */
 
 import { amazonAPI, AmazonProduct, AMAZON_REGIONS } from './amazon-api';
@@ -9,6 +10,9 @@ import { scraper, ScrapedProduct, RETAILER_SCRAPER_CONFIGS } from './scraper';
 import { GLOBAL_SAMPLE_PRODUCTS } from './sample-data';
 import { getSellersByRegion, getSellersByType, GLOBAL_SELLERS, GlobalSeller } from './global-sellers';
 import { Product } from '@/types/product-data';
+import { comparisonEngine } from '../engine/comparison';
+import { cacheService } from '../engine/cache';
+import { UnifiedProduct as EngineProduct, SellerOffer, RankedSeller } from '@/types/engine';
 
 export interface UnifiedProduct {
   id: string;
@@ -42,6 +46,12 @@ export interface PricePoint {
   };
   isPrime?: boolean;
   rating?: number;
+  // Comparison Engine Data
+  rank?: number;
+  cheapestFlag?: boolean;
+  dealScore?: number;
+  totalLandedCost?: number;
+  savingsFromHighest?: number;
 }
 
 export interface SearchOptions {
@@ -132,8 +142,13 @@ export class ProductDataService {
     // Deduplicate and sort results
     const unified = this.deduplicateAndSort(results, options);
 
+    // Apply comparison engine ranking to each product
+    const rankedProducts = await Promise.all(
+      unified.slice(0, limit).map(p => this.applyComparisonRanking(p))
+    );
+
     return {
-      products: unified.slice(0, limit),
+      products: rankedProducts,
       total: unified.length,
       sources: [...new Set(sources)],
       aggregatedAt: new Date(),
@@ -424,6 +439,125 @@ export class ProductDataService {
     } catch (error) {
       console.error('Scraper error:', error);
       return [];
+    }
+  }
+
+  private async applyComparisonRanking(product: UnifiedProduct): Promise<UnifiedProduct> {
+    try {
+      // Convert price points to SellerOffer format
+      const offers: SellerOffer[] = product.prices.map((pp, idx) => ({
+        id: `offer_${idx}`,
+        unifiedProductId: product.id,
+        seller: {
+          id: pp.retailerId,
+          name: pp.retailer,
+          domain: pp.retailerId,
+          isVerified: true,
+          isOfficialStore: false,
+          rating: pp.rating,
+          region: 'global',
+          country: 'USA',
+        },
+        pricing: {
+          basePrice: pp.price,
+          originalPrice: pp.originalPrice,
+          currency: pp.currency || 'USD',
+          isOnSale: !!pp.originalPrice,
+          discountPercent: pp.originalPrice ? Math.round((1 - pp.price / pp.originalPrice) * 100) : undefined,
+          totalLandedCost: pp.price + (pp.shipping?.cost || 0),
+        },
+        availability: {
+          status: pp.availability as any,
+          stockLevel: pp.availability === 'in_stock' ? 'high' : pp.availability === 'limited' ? 'low' : 'out',
+        },
+        condition: {
+          type: pp.condition as any,
+        },
+        shipping: {
+          cost: pp.shipping?.cost || 0,
+          isFree: pp.shipping?.freeShipping || false,
+          estimatedDelivery: pp.shipping?.estimatedDelivery,
+        },
+        fulfillment: {
+          type: 'fulfilled_by_seller',
+          isPrime: pp.isPrime,
+        },
+        sourceUrl: pp.url,
+        sourceType: 'api',
+        scrapedAt: new Date(),
+        priceHistory: [],
+      }));
+
+      // Create mock unified product for comparison engine
+      const engineProduct: EngineProduct = {
+        id: product.id,
+        sku: product.id,
+        title: product.name,
+        titleNormalized: product.name.toLowerCase(),
+        categoryId: 'electronics',
+        categoryPath: ['Electronics'],
+        identifiers: { brand: product.brand },
+        attributes: {},
+        images: [],
+        specifications: [],
+        offers,
+        stats: {
+          totalSellers: offers.length,
+          minPrice: Math.min(...offers.map(o => o.pricing.totalLandedCost)),
+          maxPrice: Math.max(...offers.map(o => o.pricing.totalLandedCost)),
+          avgPrice: offers.reduce((s, o) => s + o.pricing.totalLandedCost, 0) / offers.length,
+          priceRange: 0,
+          priceHistoryDays: 30,
+          lowestShipping: Math.min(...offers.map(o => o.shipping.cost)),
+          highestShipping: Math.max(...offers.map(o => o.shipping.cost)),
+          inStockCount: offers.filter(o => o.availability.status === 'in_stock').length,
+          outOfStockCount: offers.filter(o => o.availability.status === 'out_of_stock').length,
+        },
+        matchConfidence: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastPriceUpdate: new Date(),
+        slug: product.name.toLowerCase().replace(/\s+/g, '-'),
+        status: 'active',
+        isVerified: false,
+      };
+      engineProduct.stats.priceRange = engineProduct.stats.maxPrice - engineProduct.stats.minPrice;
+
+      // Run comparison engine
+      const comparison = await comparisonEngine.compare(engineProduct, undefined, 'USD');
+
+      // Map ranked sellers back to price points
+      const rankedPrices = comparison.sellers.map((s: RankedSeller) => ({
+        retailer: s.seller.name,
+        retailerId: s.seller.id,
+        retailerLogo: '',
+        price: s.pricing.basePrice,
+        originalPrice: s.pricing.originalPrice,
+        currency: s.pricing.currency,
+        availability: s.availability.status,
+        condition: s.condition.type,
+        url: s.sourceUrl,
+        shipping: {
+          cost: s.shipping.cost,
+          freeShipping: s.shipping.isFree,
+          estimatedDelivery: s.shipping.estimatedDelivery,
+        },
+        isPrime: s.fulfillment.isPrime,
+        rating: s.seller.rating,
+        rank: s.rank,
+        cheapestFlag: s.cheapestFlag,
+        dealScore: s.dealScore,
+        totalLandedCost: s.pricing.totalLandedCost,
+        savingsFromHighest: s.savingsFromHighest,
+      }));
+
+      return {
+        ...product,
+        prices: rankedPrices,
+      };
+    } catch (error) {
+      console.error('Comparison ranking error:', error);
+      return product;
     }
   }
 

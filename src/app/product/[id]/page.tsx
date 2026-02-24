@@ -91,7 +91,7 @@ export default function ProductDetailsPage() {
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
   const [product, setProduct] = useState<any>(null);
-  const [retailers, setRetailers] = useState(SAMPLE_RETAILERS);
+  const [retailers, setRetailers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPriceAlert, setShowPriceAlert] = useState(false);
@@ -101,6 +101,33 @@ export default function ProductDetailsPage() {
       if (params.id) {
         const productId = params.id as string;
         const sampleProduct = SAMPLE_PRODUCTS[productId];
+        
+        // Try to fetch comparison data from API
+        let comparisonData: any[] = [];
+        try {
+          const productName = sampleProduct?.name || 'iPhone 15 Pro Max';
+          const response = await fetch(`/api/products/search?q=${encodeURIComponent(productName)}&limit=1`);
+          const data = await response.json();
+          if (data.products?.[0]?.pricePoints) {
+            comparisonData = data.products[0].pricePoints.map((pp: any) => ({
+              id: pp.retailerId || Math.random().toString(),
+              name: pp.retailer?.name || pp.retailer || 'Unknown',
+              logo: pp.retailer?.logo || '',
+              logoWidth: 40,
+              price: pp.price,
+              originalPrice: pp.originalPrice,
+              inStock: pp.availability === 'in_stock',
+              rating: pp.rating || pp.retailer?.rating || 4.5,
+              delivery: pp.shipping?.estimatedDelivery || 'Standard shipping',
+              productUrl: pp.url || '#',
+              cheapestFlag: pp.cheapestFlag,
+              dealScore: pp.dealScore,
+              rank: pp.rank,
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch comparison data:', error);
+        }
         
         if (sampleProduct) {
           setProduct(sampleProduct);
@@ -121,6 +148,14 @@ export default function ProductDetailsPage() {
             reviewCount: 128,
           });
         }
+        
+        // Use comparison data if available, otherwise fallback to sample
+        if (comparisonData.length > 0) {
+          setRetailers(comparisonData);
+        } else {
+          setRetailers(SAMPLE_RETAILERS);
+        }
+        
         setIsLoading(false);
       }
     };
@@ -261,18 +296,18 @@ export default function ProductDetailsPage() {
                 </h3>
                 <div className="space-y-2">
                   {retailers
-                    .sort((a, b) => a.price - b.price)
+                    .sort((a, b) => (a.rank || a.price) - (b.rank || b.price))
                     .map((retailer, index) => (
                       <div
                         key={retailer.id}
                         className={`flex items-center justify-between p-3 rounded-lg border ${
-                          retailer.price === bestPrice
+                          retailer.cheapestFlag || retailer.price === bestPrice
                             ? 'border-[var(--pricex-yellow)] bg-[var(--pricex-yellow)]/5'
                             : 'border-border'
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          {retailer.logo.startsWith('http') ? (
+                          {retailer.logo?.startsWith('http') ? (
                             <img src={retailer.logo} alt={retailer.name} style={{ width: retailer.logoWidth || 40 }} className="h-8 object-contain" />
                           ) : (
                             <span className="text-2xl">{retailer.logo}</span>
@@ -280,9 +315,14 @@ export default function ProductDetailsPage() {
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{retailer.name}</span>
-                              {retailer.price === bestPrice && (
-                                <span className="text-xs px-2 py-0.5 bg-[var(--pricex-yellow)] text-black rounded-full font-medium">
-                                  Cheapest
+                              {retailer.cheapestFlag || retailer.price === bestPrice ? (
+                                <span className="text-xs px-2 py-0.5 bg-green-500 text-white rounded-full font-medium flex items-center gap-1">
+                                  <Award className="w-3 h-3" />
+                                  Best Deal
+                                </span>
+                              ) : (
+                                <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full font-medium">
+                                  Rank #{retailer.rank || index + 1}
                                 </span>
                               )}
                             </div>
@@ -293,6 +333,12 @@ export default function ProductDetailsPage() {
                               </span>
                               <span>•</span>
                               <span>{retailer.delivery}</span>
+                              {retailer.dealScore && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-purple-600 font-medium">Score: {retailer.dealScore}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -303,7 +349,7 @@ export default function ProductDetailsPage() {
                                 ${retailer.originalPrice.toFixed(2)}
                               </span>
                             )}
-                            <span className={`font-bold text-lg ${retailer.price === bestPrice ? 'text-[var(--pricex-yellow)]' : ''}`}>
+                            <span className={`font-bold text-lg ${retailer.cheapestFlag || retailer.price === bestPrice ? 'text-green-500' : ''}`}>
                               ${retailer.price.toFixed(2)}
                             </span>
                           </div>

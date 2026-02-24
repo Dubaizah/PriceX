@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Star } from 'lucide-react';
+import { Search, Star, Award } from 'lucide-react';
 import Link from 'next/link';
 
 interface SearchProduct {
@@ -12,7 +12,15 @@ interface SearchProduct {
   image: string;
   rating: number;
   reviews: number;
-  prices?: Array<{ retailer: string; price: number; currency: string }>;
+  prices?: Array<{
+    retailer: string;
+    price: number;
+    currency: string;
+    rank?: number;
+    cheapestFlag?: boolean;
+    dealScore?: number;
+    totalLandedCost?: number;
+  }>;
 }
 
 export default function SearchPage() {
@@ -61,6 +69,10 @@ export default function SearchPage() {
             retailer: pp.retailer?.name || 'Unknown',
             price: pp.price,
             currency: pp.currency || 'USD',
+            rank: pp.rank,
+            cheapestFlag: pp.cheapestFlag,
+            dealScore: pp.dealScore,
+            totalLandedCost: pp.totalLandedCost,
           })) || [],
         }));
         setResults(searchProducts);
@@ -135,27 +147,52 @@ export default function SearchPage() {
             <>
               <p className="mb-6 text-gray-600">{results.length} results for "{query}"</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {results.map((product) => (
+                {results.map((product) => {
+                  const cheapestPrice = product.prices?.find(p => p.cheapestFlag);
+                  const bestDeal = product.prices?.reduce((best, p) => 
+                    ((p.dealScore || 0) > (best.dealScore || 0)) ? p : best, product.prices[0]);
+                  
+                  return (
                   <Link 
                     href={`/product/${product.id}`}
                     key={product.id}
                     className="block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-800">
+                    <div className="aspect-square bg-gray-100 dark:bg-gray-800 relative">
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                      {cheapestPrice?.cheapestFlag && (
+                        <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                          <Award className="w-3 h-3" />
+                          Best Deal
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <p className="text-xs text-gray-500 uppercase">{product.brand}</p>
-                      <h3 className="font-semibold mt-1">{product.name}</h3>
+                      <h3 className="font-semibold mt-1 line-clamp-2">{product.name}</h3>
                       <div className="flex items-center gap-1 mt-2">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm">{product.rating}</span>
                         <span className="text-xs text-gray-400">({product.reviews.toLocaleString()})</span>
                       </div>
-                      <p className="text-xl font-bold mt-2 text-[var(--pricex-yellow)]">${product.price}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xl font-bold text-[var(--pricex-yellow)]">
+                          ${cheapestPrice?.price || product.price}
+                        </p>
+                        {bestDeal?.dealScore ? (
+                          <span className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-2 py-1 rounded-full">
+                            Score: {bestDeal.dealScore}
+                          </span>
+                        ) : null}
+                      </div>
+                      {product.prices && product.prices.length > 1 && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          +{product.prices.length - 1} more sellers
+                        </p>
+                      )}
                     </div>
                   </Link>
-                ))}
+                )})}
               </div>
             </>
           )}

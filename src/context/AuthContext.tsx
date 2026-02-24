@@ -35,7 +35,7 @@ interface AuthContextType extends AuthState {
   terminateSession: (sessionId: string) => Promise<void>;
   
   // User profile
-  updateProfile: (data: Partial<User['profile']>) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (data: Partial<User['profile']>) => Promise<{ success: boolean; error: string }>;
   
   // Loading states
   isLoading: boolean;
@@ -164,25 +164,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localUser.lockedUntil = null;
           localStorage.setItem('pricex-users', JSON.stringify(users));
 
-          // Create user session
+          // Update last login
+          localUser.security = localUser.security || {};
+          localUser.security.lastLoginAt = new Date().toISOString();
+          localStorage.setItem('pricex-users', JSON.stringify(users));
+
+          // Create user session - use saved profile settings
           const user = {
             id: localUser.id,
             email: localUser.email,
             name: localUser.name,
             role: localUser.role || 'user',
             status: 'active',
-            profile: {
+            profile: localUser.profile || {
               timezone: 'UTC',
               language: 'en',
               region: 'global',
               currency: 'USD',
             },
             security: {
-              twoFactorEnabled: false,
+              twoFactorEnabled: localUser.security?.twoFactorEnabled || false,
               lastLoginAt: new Date(),
               lastLoginLocation: null,
             },
-            createdAt: new Date(),
+            createdAt: localUser.createdAt,
+            gdprConsent: localUser.gdprConsent,
           };
 
           const session = {
@@ -248,13 +254,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const demoUser = demoUsers[email.toLowerCase()];
       if (demoUser && demoUser.password === password) {
+        // Check if demo user already exists in localStorage (with saved settings)
+        let localUser = users.find((u: any) => u.email === email.toLowerCase());
+        
+        if (!localUser) {
+          // Create demo user in localStorage so settings can be saved
+          localUser = {
+            id: `demo_${Date.now()}`,
+            email: email.toLowerCase(),
+            name: demoUser.name,
+            mobile: '',
+            passwordHash: demoUser.password,
+            role: demoUser.role,
+            status: 'active',
+            emailVerified: true,
+            mobileVerified: false,
+            twoFactorEnabled: false,
+            profile: {
+              timezone: 'Asia/Dubai',
+              language: 'en',
+              region: 'middle-east',
+              currency: 'USD',
+            },
+            security: {
+              passwordHistory: [],
+              passwordChangedAt: new Date().toISOString(),
+              lastLoginAt: new Date().toISOString(),
+              lastLoginIp: null,
+              lastLoginDevice: null,
+              lastLoginLocation: null,
+              failedLoginAttempts: 0,
+              lockedUntil: null,
+              twoFactorEnabled: false,
+              twoFactorMethod: null,
+              twoFactorSecret: null,
+              backupCodes: [],
+            },
+            gdprConsent: { marketing: true, analytics: true, thirdParty: true },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          users.push(localUser);
+          localStorage.setItem('pricex-users', JSON.stringify(users));
+        }
+
         const user = {
-          id: 'demo_user',
-          email: email.toLowerCase(),
-          name: demoUser.name,
-          role: demoUser.role,
+          id: localUser.id,
+          email: localUser.email,
+          name: localUser.name,
+          role: localUser.role,
           status: 'active',
-          profile: {
+          profile: localUser.profile || {
             timezone: 'Asia/Dubai',
             language: 'en',
             region: 'middle-east',
@@ -265,7 +315,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             lastLoginAt: new Date(),
             lastLoginLocation: null,
           },
-          createdAt: new Date(),
+          createdAt: localUser.createdAt,
         };
 
         const session = {
@@ -528,6 +578,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const clearError = () => setError(null);
 
+  // Update user profile
+  const updateProfile = async (data: Partial<User['profile']>): Promise<{ success: boolean; error: string }> => {
+    try {
+      if (!state.user) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      // Update in localStorage users
+      const users = JSON.parse(localStorage.getItem('pricex-users') || '[]');
+      const userIndex = users.findIndex((u: any) => u.id === state.user?.id);
+      
+      if (userIndex !== -1) {
+        users[userIndex].profile = { ...users[userIndex].profile, ...data };
+        users[userIndex].updatedAt = new Date().toISOString();
+        localStorage.setItem('pricex-users', JSON.stringify(users));
+      }
+
+      // Update current session
+      const updatedUser = { ...state.user, profile: { ...state.user.profile, ...data } };
+      setState(prev => ({ ...prev, user: updatedUser }));
+
+      // Update localStorage session
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const sessionData = JSON.parse(stored);
+        sessionData.user = updatedUser;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+      }
+
+      return { success: true, error: '' };
+    } catch (err) {
+      return { success: false, error: 'Failed to update profile' };
+    }
+  };
+
   // Placeholder implementations for remaining methods
   const verifyEmail = async (): Promise<boolean> => true;
   const verifyMobile = async (): Promise<boolean> => true;
@@ -536,7 +621,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setup2FA = async (): Promise<any> => ({ success: true });
   const disable2FA = async (): Promise<any> => ({ success: true });
   const generateBackupCodes = async (): Promise<any> => ({ success: true });
-  const updateProfile = async (): Promise<any> => ({ success: true });
 
   const value: AuthContextType = {
     ...state,

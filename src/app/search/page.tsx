@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Star, Award } from 'lucide-react';
 import Link from 'next/link';
 
@@ -8,19 +8,6 @@ interface SearchProduct {
   id: string;
   name: string;
   brand: string;
-  price: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  prices?: Array<{
-    retailer: string;
-    price: number;
-    currency: string;
-    rank?: number;
-    cheapestFlag?: boolean;
-    dealScore?: number;
-    totalLandedCost?: number;
-  }>;
 }
 
 export default function SearchPage() {
@@ -29,28 +16,19 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    if (q) {
-      setQuery(q);
-      handleSearchSubmit(q);
-    }
-  }, []);
-
-  const handleSearchSubmit = async (searchQuery?: string) => {
-    const q = searchQuery || query;
-    if (!q.trim()) {
+  const handleSearchSubmit = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) {
       setResults([]);
       setHasSearched(false);
       return;
     }
 
+    setQuery(searchQuery);
     setLoading(true);
     setHasSearched(true);
 
     try {
-      const response = await fetch(`/api/products/search?q=${encodeURIComponent(q)}&limit=50`);
+      const response = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=50`);
       const data = await response.json();
       
       // Handle both response formats
@@ -93,7 +71,16 @@ export default function SearchPage() {
     }
 
     setLoading(false);
-  };
+  }, []);
+
+  // Trigger search on page load with query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
+    if (q) {
+      handleSearchSubmit(q);
+    }
+  }, [handleSearchSubmit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

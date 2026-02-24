@@ -8,6 +8,11 @@ interface SearchProduct {
   id: string;
   name: string;
   brand: string;
+  price: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  prices: any[];
 }
 
 export default function SearchPage() {
@@ -16,7 +21,16 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Search function
+  useEffect(() => {
+    // Get query from URL on mount
+    const urlParams = new URLSearchParams(window.location.search);
+    const q = urlParams.get('q');
+    if (q) {
+      setQuery(q);
+      doSearch(q);
+    }
+  }, []);
+
   const doSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
@@ -39,19 +53,11 @@ export default function SearchPage() {
           id: p.id,
           name: p.name,
           brand: p.brand,
-          price: p.prices?.[0]?.price || p.pricePoints?.[0]?.price || p.priceRange?.min || 0,
+          price: p.prices?.[0]?.price || p.pricePoints?.[0]?.price || 0,
           image: p.imageUrl || p.images?.[0]?.url || '/product-1.jpg',
           rating: p.rating || 0,
           reviews: p.reviewCount || 0,
-          prices: p.prices?.map((pp: any) => ({
-            retailer: pp.retailer || 'Unknown',
-            price: pp.price,
-            currency: pp.currency || 'USD',
-            rank: pp.rank,
-            cheapestFlag: pp.cheapestFlag,
-            dealScore: pp.dealScore,
-            totalLandedCost: pp.totalLandedCost,
-          })) || [],
+          prices: p.prices || [],
         }));
         setResults(searchProducts);
       } else {
@@ -65,22 +71,10 @@ export default function SearchPage() {
     setLoading(false);
   };
 
-  // Trigger search on page load with query param
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    // Use setTimeout to ensure this runs after hydration
-    setTimeout(() => {
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get('q');
-      if (q && q !== query) {
-        doSearch(q);
-      }
-    }, 100);
-  }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query) {
+    if (query.trim()) {
+      // Update URL
       window.history.pushState({}, '', `/search?q=${encodeURIComponent(query)}`);
       doSearch(query);
     }
@@ -139,8 +133,8 @@ export default function SearchPage() {
               <p className="mb-6 text-gray-600">{results.length} results for "{query}"</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {results.map((product) => {
-                  const cheapestPrice = product.prices?.find(p => p.cheapestFlag);
-                  const bestDeal = product.prices?.reduce((best, p) => 
+                  const cheapestPrice = product.prices?.find((p: any) => p.cheapestFlag);
+                  const bestDeal = product.prices?.reduce((best: any, p: any) => 
                     ((p.dealScore || 0) > (best.dealScore || 0)) ? p : best, product.prices[0]);
                   
                   return (

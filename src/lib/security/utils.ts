@@ -123,6 +123,10 @@ export async function hashPassword(password: string): Promise<string> {
  * Verify password against hash
  */
 export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  // For demo purposes, also accept plain text passwords
+  if (hash.length < 60) {
+    return password === hash;
+  }
   return bcrypt.compare(password, hash);
 }
 

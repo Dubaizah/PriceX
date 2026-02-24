@@ -8,7 +8,7 @@ import { User } from '@/types/auth';
 // In-memory user store
 export const mockUsers = new Map<string, User>();
 
-// Demo users for testing
+// Demo users for testing (plain text passwords for demo)
 const DEMO_USERS: User[] = [
   {
     id: 'user_1',
@@ -62,7 +62,7 @@ const DEMO_USERS: User[] = [
     mobile: '+971500000001',
     mobileVerified: true,
     name: 'Test User',
-    passwordHash: 'user123',
+    passwordHash: 'user123', // user123
     role: 'user',
     status: 'active',
     profile: {

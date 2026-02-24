@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Star, Award } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,7 +16,8 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSearchSubmit = useCallback(async (searchQuery: string) => {
+  // Search function
+  const doSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
       setHasSearched(false);
@@ -31,7 +32,6 @@ export default function SearchPage() {
       const response = await fetch(`/api/products/search?q=${encodeURIComponent(searchQuery)}&limit=50`);
       const data = await response.json();
       
-      // Handle both response formats
       const products = data.products || data;
       
       if (products && Array.isArray(products) && products.length > 0) {
@@ -51,14 +51,6 @@ export default function SearchPage() {
             cheapestFlag: pp.cheapestFlag,
             dealScore: pp.dealScore,
             totalLandedCost: pp.totalLandedCost,
-          })) || p.pricePoints?.map((pp: any) => ({
-            retailer: pp.retailer?.name || 'Unknown',
-            price: pp.price,
-            currency: pp.currency || 'USD',
-            rank: pp.rank,
-            cheapestFlag: pp.cheapestFlag,
-            dealScore: pp.dealScore,
-            totalLandedCost: pp.totalLandedCost,
           })) || [],
         }));
         setResults(searchProducts);
@@ -71,23 +63,23 @@ export default function SearchPage() {
     }
 
     setLoading(false);
-  }, []);
+  };
 
   // Trigger search on page load with query param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q');
     if (q) {
-      handleSearchSubmit(q);
+      doSearch(q);
     }
-  }, [handleSearchSubmit]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query) {
       window.history.pushState({}, '', `/search?q=${encodeURIComponent(query)}`);
+      doSearch(query);
     }
-    handleSearchSubmit();
   };
 
   return (

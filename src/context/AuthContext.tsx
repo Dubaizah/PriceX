@@ -153,7 +153,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (localUser.lockedUntil && new Date(localUser.lockedUntil) > new Date()) {
           return {
             success: false,
-            requires2FA: false,
             message: 'Account is locked. Too many failed attempts.',
             lockedUntil: new Date(localUser.lockedUntil),
           };
@@ -165,24 +164,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localUser.lockedUntil = null;
           localStorage.setItem('pricex-users', JSON.stringify(users));
 
-          // Return success but require 2FA (mandatory)
+          // Create user session
+          const user = {
+            id: localUser.id,
+            email: localUser.email,
+            name: localUser.name,
+            role: localUser.role || 'user',
+            status: 'active',
+            profile: {
+              timezone: 'UTC',
+              language: 'en',
+              region: 'global',
+              currency: 'USD',
+            },
+            security: {
+              twoFactorEnabled: false,
+              lastLoginAt: new Date(),
+              lastLoginLocation: null,
+            },
+            createdAt: new Date(),
+          };
+
+          const session = {
+            id: `session_${Date.now()}`,
+            userId: user.id,
+            token: `token_${Date.now()}`,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          };
+
+          setState({
+            user,
+            session,
+            isAuthenticated: true,
+            isLoading: false,
+            requires2FA: false,
+            tempToken: null,
+          });
+
+          if (rememberMe) {
+            localStorage.setItem('pricex-auth-session', JSON.stringify({
+              user,
+              session,
+              expiresAt: session.expiresAt,
+            }));
+          }
+
           return {
             success: true,
-            requires2FA: true,
-            message: 'Please complete 2FA verification',
+            message: 'Login successful',
           };
         } else {
           // Increment failed attempts
           localUser.failedLoginAttempts = (localUser.failedLoginAttempts || 0) + 1;
           
           if (localUser.failedLoginAttempts >= 3) {
-            // Lock account
-            localUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min lock
+            localUser.lockedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
             localStorage.setItem('pricex-users', JSON.stringify(users));
             
             return {
               success: false,
-              requires2FA: false,
               message: 'Account locked due to too many failed attempts.',
               remainingAttempts: 0,
               lockedUntil: new Date(Date.now() + 30 * 60 * 1000),
@@ -193,7 +233,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           return {
             success: false,
-            requires2FA: false,
             message: 'Invalid credentials',
             remainingAttempts: 3 - localUser.failedLoginAttempts,
           };
@@ -209,25 +248,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const demoUser = demoUsers[email.toLowerCase()];
       if (demoUser && demoUser.password === password) {
-        // Demo users also require 2FA (mandatory)
+        const user = {
+          id: 'demo_user',
+          email: email.toLowerCase(),
+          name: demoUser.name,
+          role: demoUser.role,
+          status: 'active',
+          profile: {
+            timezone: 'Asia/Dubai',
+            language: 'en',
+            region: 'middle-east',
+            currency: 'USD',
+          },
+          security: {
+            twoFactorEnabled: false,
+            lastLoginAt: new Date(),
+            lastLoginLocation: null,
+          },
+          createdAt: new Date(),
+        };
+
+        const session = {
+          id: `session_${Date.now()}`,
+          userId: user.id,
+          token: `token_${Date.now()}`,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        };
+
+        setState({
+          user,
+          session,
+          isAuthenticated: true,
+          isLoading: false,
+          requires2FA: false,
+          tempToken: null,
+        });
+
+        if (rememberMe) {
+          localStorage.setItem('pricex-auth-session', JSON.stringify({
+            user,
+            session,
+            expiresAt: session.expiresAt,
+          }));
+        }
+
         return {
           success: true,
-          requires2FA: true,
-          message: 'Please complete 2FA verification',
+          message: 'Login successful',
         };
       }
 
       setError('Invalid credentials');
       return {
         success: false,
-        requires2FA: false,
         message: 'Invalid credentials',
       };
     } catch (err) {
       setError('Network error. Please try again.');
       return {
         success: false,
-        requires2FA: false,
         message: 'Network error',
       };
     } finally {

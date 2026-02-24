@@ -1,6 +1,5 @@
 /**
  * PriceX - Email Service using Resend
- * No domain verification needed!
  */
 
 interface EmailResponse {
@@ -36,6 +35,7 @@ export async function sendOTPEmail(to: string, code: string, purpose: string = '
 <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f5f5f5;">
   <div style="background: #FFD700; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
     <h1 style="margin: 0; color: #000;">PriceX</h1>
+    <p style="margin: 5px 0 0 0; color: #333;">Global Price Comparison</p>
   </div>
   <div style="background: #fff; padding: 40px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
     <h2 style="color: #333; text-align: center;">Your Verification Code</h2>
@@ -44,6 +44,10 @@ export async function sendOTPEmail(to: string, code: string, purpose: string = '
       ${code}
     </div>
     <p style="color: #999; font-size: 14px; text-align: center;">This code expires in 10 minutes.</p>
+    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">If you didn't request this, please ignore this email.</p>
+  </div>
+  <div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+    <p>© 2024 PriceX. All rights reserved.</p>
   </div>
 </body>
 </html>`,
@@ -54,8 +58,8 @@ export async function sendOTPEmail(to: string, code: string, purpose: string = '
       const data = await response.json();
       return { success: true, messageId: data.id };
     } else {
-      const error = await response.text();
-      return { success: false, error: error };
+      const error = await response.json();
+      return { success: false, error: error.message || 'Failed to send' };
     }
   } catch (err) {
     return { success: false, error: 'Failed to send email' };

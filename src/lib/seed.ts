@@ -357,7 +357,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '5', name: 'Dell XPS 15 OLED', description: 'Premium Windows laptop with 15.6" OLED display, Intel Core i9, and sleek design.', brand: 'Dell', model: 'XPS 15 9530', sku: 'XPS159530', categoryId: 'electronics',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Dell XPS 15 OLED', type: 'main', order: 1 }],
+    images: [{ id: '1', url: getImgAlt('Dell XPS 15 OLED', 'Dell'), thumbnail: getImgAlt('Dell XPS 15 OLED', 'Dell'), alt: 'Dell XPS 15 OLED', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '15.6" 3.5K OLED', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'Intel Core i9-13900H', group: 'Performance' },
@@ -370,7 +370,7 @@ export const SEED_PRODUCTS: SeedProduct[] = [
   },
   {
     id: '6', name: 'Lenovo ThinkPad X1 Carbon Gen 12', description: 'Business ultrabook with Intel Core Ultra processor, weighing only 1.09kg.', brand: 'Lenovo', model: 'ThinkPad X1 Carbon Gen 12', sku: '21H5001HUS', categoryId: 'electronics',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Lenovo ThinkPad X1 Carbon', type: 'main', order: 1 }],
+    images: [{ id: '1', url: getImgAlt('Lenovo ThinkPad X1 Carbon Gen 12', 'Lenovo'), thumbnail: getImgAlt('Lenovo ThinkPad X1 Carbon Gen 12', 'Lenovo'), alt: 'Lenovo ThinkPad X1 Carbon', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'display', name: 'Display', value: '14" 2.8K OLED', group: 'Display' },
       { attributeId: 'processor', name: 'Processor', value: 'Intel Core Ultra 7', group: 'Performance' },

@@ -251,6 +251,9 @@ export class ProductDataService {
       sources.push('local');
     }
 
+    // NOTE: External APIs disabled - returning fake/irrelevant data
+    // Only using local seed data for now
+    /*
     // 2. Search Amazon (all regions)
     if (process.env.NEXT_PUBLIC_USE_LIVE_DATA !== 'false') {
       try {
@@ -304,6 +307,7 @@ export class ProductDataService {
         console.error('Scraper error:', error);
       }
     }
+    */
 
     // Deduplicate and sort results
     const unified = this.deduplicateAndSort(results, options);

@@ -19,132 +19,79 @@ function getSmartImage(name: string, brand: string, fallbackUrl: string): string
   const n = (name || '').toLowerCase();
   const b = (brand || '').toLowerCase();
   
-  // MOST SPECIFIC first - product-specific matches
+  // MOST SPECIFIC first - check PRODUCT TYPE before brand
   const imageMap: [string[], string][] = [
-    // Nike - most specific first
+    // PRODUCT TYPE first (more specific)
+    [['ipad pro', 'ipad air', 'ipad 10th', 'ipad mini'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
+    [['macbook pro', 'macbook air'], 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
+    [['apple watch'], 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400'],
+    [['airpods'], 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400'],
+    [['galaxy tab', 'tablet'], 'https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400'],
+    [['galaxy watch', 'smartwatch'], 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400'],
+    [['oled tv', 'smart tv', '4k tv'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
+    [['refrigerator', 'fridge'], 'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=400'],
+    
+    // Nike - specific models
     [['air jordan', 'jordan 1', 'jordan 1 retro'], 'https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=400'],
     [['air max 90'], 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'],
-    [['air max 97'], 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'],
-    [['dunk low', 'dunk retro'], 'https://images.unsplash.com/photo-1597045566677-8cf032ed6634?w=400'],
-    [['air force 1', 'air force'], 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400'],
-    [['nike air max'], 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'],
+    [['metcon'], 'https://images.unsplash.com/photo-1517904329008-6e4a4e8b1c4e?w=400'],
     [['brasilia', 'duffle bag'], 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400'],
     
     // Adidas
     [['yeezy'], 'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=400'],
     [['samba'], 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400'],
-    [['stan smith'], 'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=400'],
     [['ultraboost'], 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400'],
-    [['adidas nmd'], 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400'],
-    [['forum'], 'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=400'],
     
-    // Apple iPhones - specific models
-    [['iphone 15 pro max'], 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'],
+    // Apple iPhones
     [['iphone 15 pro'], 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'],
     [['iphone 15'], 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'],
-    [['iphone 14 pro'], 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400'],
     [['iphone 14'], 'https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?w=400'],
     
     // Samsung Galaxy
     [['galaxy s24 ultra'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
     [['galaxy s24'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
-    [['galaxy s23'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
     [['galaxy z fold'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
-    [['galaxy z flip'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
     
     // Google Pixel
-    [['pixel 8 pro'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
     [['pixel 8'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
-    [['pixel 7'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
-    
-    // MacBooks
-    [['macbook pro 16'], 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
-    [['macbook pro 14'], 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
-    [['macbook pro'], 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400'],
-    [['macbook air 15'], 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400'],
-    [['macbook air'], 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400'],
-    
-    // iPads
-    [['ipad pro 12.9'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
-    [['ipad pro'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
-    [['ipad air'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
-    [['ipad 10'], 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400'],
-    
-    // Apple Watch
-    [['apple watch ultra'], 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400'],
-    [['apple watch series 9'], 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400'],
-    [['apple watch'], 'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=400'],
-    
-    // AirPods
-    [['airpods pro 2'], 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400'],
-    [['airpods max'], 'https://images.unsplash.com/photo-1625845482738-967e29e441d4?w=400'],
-    [['airpods'], 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400'],
     
     // Gaming
     [['playstation 5', 'ps5'], 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'],
-    [['ps4'], 'https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400'],
     [['xbox series x'], 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400'],
-    [['xbox series s'], 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400'],
     [['nintendo switch'], 'https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?w=400'],
-    [['steam deck'], 'https://images.unsplash.com/photo-1640955014216-75201056c829?w=400'],
-    
-    // Drones
-    [['dji air 3'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
-    [['dji mini'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
-    [['dji mavic'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
-    [['dji'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
     
     // Cameras
-    [['sony a7 iv', 'alpha a7'], 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400'],
-    [['sony a7c'], 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400'],
-    [['canon r6', 'eos r6'], 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=400'],
-    [['canon r8'], 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=400'],
-    [['nikon z8'], 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400'],
-    [['nikon z6'], 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400'],
-    [['fujifilm x-t5'], 'https://images.unsplash.com/photo-1516724562728-afc824a36e84?w=400'],
+    [['sony a7', 'alpha a7'], 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400'],
+    [['canon eos', 'eos r'], 'https://images.unsplash.com/photo-1510127034890-ba27508e9f1c?w=400'],
     
-    // TVs
-    [['lg c3', 'lg oled'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
-    [['samsung s95'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
-    [['sony a95'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
-    
-    // Watches
-    [['rolex submariner'], 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400'],
-    [['rolex daytona'], 'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?w=400'],
-    [['omega speedmaster'], 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400'],
-    [['cartier santos'], 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400'],
-    
-    // Bags
-    [['louis vuitton speedy'], 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400'],
-    [['louis vuitton neverfull'], 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400'],
-    [['gucci gg marmont'], 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400'],
-    [['hermès birkin'], 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400'],
-    [['coach tabby'], 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400'],
+    // Drones
+    [['dji mini', 'dji air', 'dji mavic'], 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400'],
     
     // Headphones
     [['sony wh-1000xm5'], 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=400'],
-    [['sony wf-1000xm5'], 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400'],
-    [['bose quietcomfort'], 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400'],
-    [['bose qc45'], 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400'],
+    [['bose quietcomfort', 'qc45'], 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400'],
     
     // Dyson
     [['dyson v15'], 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=400'],
     [['dyson airwrap'], 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=400'],
-    [['dyson supersonic'], 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?w=400'],
     
-    // Generic brand matches (last)
+    // Watches
+    [['rolex'], 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400'],
+    
+    // BRAND fallback (last)
+    [['samsung'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
+    [['apple'], 'https://images.unsplash.com/photo-1591337676887-a217a6970a8c?w=400'],
     [['nike'], 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400'],
     [['adidas'], 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400'],
-    [['apple'], 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400'],
-    [['samsung'], 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400'],
     [['sony'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
     [['dell'], 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400'],
     [['lenovo'], 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400'],
-    [['hp'], 'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400'],
-    [['microsoft'], 'https://images.unsplash.com/photo-1593642632823-8f78536788c6?w=400'],
-    [['asus'], 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400'],
+    [['microsoft'], 'https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400'],
+    [['google'], 'https://images.unsplash.com/photo-1598324604414-2abfb8f395ba?w=400'],
+    [['lg'], 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400'],
   ];
   
+  // Check name first (most specific)
   for (const [keywords, url] of imageMap) {
     for (const kw of keywords) {
       if (n.includes(kw)) {
@@ -153,7 +100,7 @@ function getSmartImage(name: string, brand: string, fallbackUrl: string): string
     }
   }
   
-  // Brand fallback
+  // Then check brand
   for (const [keywords, url] of imageMap) {
     for (const kw of keywords) {
       if (b.includes(kw)) {

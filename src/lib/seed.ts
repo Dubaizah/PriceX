@@ -774,7 +774,7 @@ id: '17', name: 'Sony PlayStation 5 Slim', description: 'Next-gen gaming console
   },
   {
     id: '37', name: 'Nike Metcon 9', description: 'Versatile training shoe with stable heel, breathable mesh, and durable rubber outsole.', brand: 'Nike', model: 'Metcon 9', sku: 'DX9236-001', categoryId: 'sports',
-    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', alt: 'Nike Metcon 9', type: 'main', order: 1 }],
+    images: [{ id: '1', url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400', thumbnail: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200', alt: 'Nike Metcon 9', type: 'main', order: 1 }],
     specifications: [
       { attributeId: 'drop', name: 'Heel Drop', value: '4mm', group: 'Support' },
       { attributeId: 'weight', name: 'Weight', value: '8.1oz', group: 'Weight' },

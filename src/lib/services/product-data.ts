@@ -9,6 +9,7 @@ import { ebayAPI, EbayProduct, EBAY_ENDPOINTS } from './ebay-api';
 import { scraper, ScrapedProduct, RETAILER_SCRAPER_CONFIGS } from './scraper';
 import { GLOBAL_SAMPLE_PRODUCTS } from './sample-data';
 import { getSellersByRegion, getSellersByType, GLOBAL_SELLERS, GlobalSeller } from './global-sellers';
+import { dataPipeline, getAPIStatus } from './global-data-pipeline';
 import { Product } from '@/types/product-data';
 import { comparisonEngine } from '../engine/comparison';
 import { cacheService } from '../engine/cache';
